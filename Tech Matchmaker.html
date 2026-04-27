@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tech Matchmaker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f1eb;
+  --surface: #ede8e0;
+  --border: #d6cfc3;
+  --text: #1a1714;
+  --muted: #8a8178;
+  --card-bg: #ffffff;
+  --card-border: #d6cfc3;
+  --card-shadow: 4px 4px 0px #c2baad;
+  --card-shadow-hover: 6px 6px 0px #a89e90;
+  --accent1: #e85d3f;
+  --accent2: #3b7dd8;
+  --accent3: #2dab6f;
+  --accent4: #d4a017;
+  --accent5: #9b59d4;
+  --green: #2dab6f;
+  --red: #e85d3f;
+  --header-bg: #1a1714;
+  --header-text: #f5f1eb;
+}
+
+[data-theme="dark"] {
+  --bg: #141210;
+  --surface: #1e1c19;
+  --border: #2e2b26;
+  --text: #f0ece5;
+  --muted: #7a7168;
+  --card-bg: #252220;
+  --card-border: #3a3630;
+  --card-shadow: 4px 4px 0px #0e0d0b;
+  --card-shadow-hover: 6px 6px 0px #080706;
+  --accent1: #ff6b47;
+  --accent2: #5a9cf5;
+  --accent3: #3dca84;
+  --accent4: #f5b731;
+  --accent5: #b57cf7;
+  --green: #3dca84;
+  --red: #ff6b47;
+  --header-bg: #0e0d0b;
+  --header-text: #f0ece5;
+}
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* HEADER */
+.header {
+  background: var(--header-bg);
+  color: var(--header-text);
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  gap: 16px;
+  flex-shrink: 0;
+  border-bottom: 3px solid var(--border);
+}
+
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  flex: 1;
+}
+.logo span { color: var(--accent2); }
+
+.hstats {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.hstat {
+  text-align: center;
+}
+.hstat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  opacity: 1;
+  color: rgba(255,255,255,.65);
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+.hstat-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+.val-score { color: var(--accent2); }
+.val-round { color: var(--accent3); }
+.val-time  { color: var(--accent4); }
+
+.theme-btn {
+  width: 38px; height: 38px;
+  border: 2px solid rgba(255,255,255,.2);
+  border-radius: 8px;
+  background: rgba(255,255,255,.08);
+  color: var(--header-text);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.theme-btn:hover { background: rgba(255,255,255,.15); }
+
+/* ROUND LABEL */
+.round-bar {
+  background: var(--surface);
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 2px solid var(--border);
+  flex-shrink: 0;
+}
+.round-tag {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  padding: 4px 12px;
+  background: var(--text);
+  color: var(--bg);
+  border-radius: 4px;
+}
+.round-desc {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  opacity: .7;
+  flex: 1;
+}
+.pip-row {
+  display: flex;
+  gap: 5px;
+}
+.pip {
+  width: 20px; height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  transition: background .3s;
+}
+.pip.matched { background: var(--green); }
+.pip.wrong   { background: var(--red); }
+
+/* MAIN GAME AREA */
+.game-area {
+  flex: 1;
+  display: flex;
+  gap: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.col {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.col-header {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-weight: 700;
+  color: var(--text);
+  opacity: .8;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 4px;
+}
+
+/* DIVIDER */
+.col-divider {
+  width: 3px;
+  background: var(--border);
+  flex-shrink: 0;
+  position: relative;
+}
+.col-divider::after {
+  content: '↔';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: var(--muted);
+  background: var(--bg);
+  padding: 6px 2px;
+}
+
+/* CARDS */
+.card {
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+  transition: transform .12s, box-shadow .12s, border-color .15s, opacity .3s;
+  position: relative;
+  user-select: none;
+  min-height: 70px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.card:hover:not(.matched):not(.wrong):not(.disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.card.selected {
+  border-color: var(--accent2);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--accent2);
+}
+
+.card.matched {
+  border-color: var(--green);
+  box-shadow: 4px 4px 0px color-mix(in srgb, var(--green) 40%, transparent);
+  opacity: .55;
+  cursor: default;
+}
+
+.card.wrong {
+  border-color: var(--red);
+  box-shadow: 4px 4px 0px color-mix(in srgb, var(--red) 40%, transparent);
+  animation: shake .35s ease;
+}
+
+.card.disabled {
+  cursor: default;
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.card-body { flex: 1; min-width: 0; }
+
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+
+.card-sub {
+  font-size: 11px;
+  color: var(--text);
+  opacity: .55;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.match-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity .2s, transform .2s;
+}
+.card.matched .match-badge { opacity: 1; transform: scale(1); }
+
+/* RESULT PANEL */
+.result-panel {
+  width: 260px;
+  flex-shrink: 0;
+  border-left: 3px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.result-panel-header {
+  padding: 12px 14px 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--text);
+  opacity: .8;
+  border-bottom: 2px solid var(--border);
+  flex-shrink: 0;
+}
+
+.result-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result-item {
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--card-bg);
+  overflow: hidden;
+  animation: slideIn .3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.result-vis {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  font-size: 11px;
+}
+
+.result-info {
+  padding: 8px 10px 10px;
+  border-top: 1px solid var(--border);
+}
+
+.result-pair {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+
+.result-explanation {
+  font-size: 11px;
+  color: var(--text);
+  opacity: .65;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* VISUALIZATIONS */
+.vis-solar {
+  background: linear-gradient(160deg, #1a0a00 0%, #3d1f00 100%);
+}
+.vis-crispr {
+  background: linear-gradient(160deg, #001a0f 0%, #003320 100%);
+}
+.vis-5g {
+  background: linear-gradient(160deg, #000d2e 0%, #001859 100%);
+}
+.vis-blockchain {
+  background: linear-gradient(160deg, #1a0028 0%, #2d0047 100%);
+}
+.vis-neural {
+  background: linear-gradient(160deg, #0d1a2e 0%, #162d50 100%);
+}
+.vis-gps {
+  background: linear-gradient(160deg, #001a14 0%, #00332a 100%);
+}
+.vis-mrna {
+  background: linear-gradient(160deg, #1a0a14 0%, #330d2a 100%);
+}
+.vis-lidar {
+  background: linear-gradient(160deg, #0a0a00 0%, #1f1f00 100%);
+}
+.vis-desal {
+  background: linear-gradient(160deg, #001428 0%, #00234a 100%);
+}
+.vis-3dp {
+  background: linear-gradient(160deg, #140a00 0%, #291400 100%);
+}
+.vis-facerec {
+  background: linear-gradient(160deg, #0d0d1a 0%, #1a1a33 100%);
+}
+.vis-wind {
+  background: linear-gradient(160deg, #001428 0%, #002847 100%);
+}
+.vis-carbon {
+  background: linear-gradient(160deg, #0a1400 0%, #142800 100%);
+}
+.vis-satnet {
+  background: linear-gradient(160deg, #000514 0%, #000d28 100%);
+}
+.vis-smartmeter {
+  background: linear-gradient(160deg, #1a1400 0%, #332800 100%);
+}
+.vis-drone {
+  background: linear-gradient(160deg, #0a0014 0%, #140028 100%);
+}
+.vis-vertfarm {
+  background: linear-gradient(160deg, #001408 0%, #002814 100%);
+}
+.vis-digital {
+  background: linear-gradient(160deg, #00141a 0%, #002833 100%);
+}
+.vis-edge {
+  background: linear-gradient(160deg, #14000a 0%, #280014 100%);
+}
+.vis-quantum {
+  background: linear-gradient(160deg, #001414 0%, #002828 100%);
+}
+.vis-bio {
+  background: linear-gradient(160deg, #140000 0%, #280000 100%);
+}
+.vis-ar {
+  background: linear-gradient(160deg, #141400 0%, #282800 100%);
+}
+.vis-av {
+  background: linear-gradient(160deg, #001400 0%, #002800 100%);
+}
+.vis-grid {
+  background: linear-gradient(160deg, #140a0a 0%, #281414 100%);
+}
+.vis-bci {
+  background: linear-gradient(160deg, #0a001a 0%, #140033 100%);
+}
+
+/* SVG animations inside vis */
+.vis-svg { width: 100%; height: 100%; }
+
+/* OVERLAY SCREENS */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+.overlay.hidden { display: none; }
+
+.overlay-card {
+  background: var(--card-bg);
+  border: 3px solid var(--border);
+  border-radius: 16px;
+  padding: 36px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 8px 8px 0px var(--border);
+}
+
+.overlay-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.overlay-sub {
+  color: var(--text);
+  opacity: .65;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.overlay-score {
+  font-family: 'Syne', sans-serif;
+  font-size: 56px;
+  font-weight: 800;
+  color: var(--accent2);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.overlay-score-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  opacity: .55;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  margin-bottom: 28px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: 8px;
+  border: 2px solid var(--text);
+  background: var(--text);
+  color: var(--bg);
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .1s, box-shadow .1s;
+  box-shadow: 3px 3px 0px var(--border);
+  letter-spacing: .02em;
+}
+.btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--border);
+}
+.btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border);
+}
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  margin-left: 8px;
+}
+
+.stars {
+  font-size: 36px;
+  margin-bottom: 12px;
+  letter-spacing: 4px;
+}
+
+/* COMBO FLASH */
+.combo-flash {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: var(--accent3);
+  color: #fff;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 6px 16px;
+  border-radius: 20px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 50;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+.combo-flash.show {
+  animation: comboAnim .9s ease forwards;
+}
+
+@keyframes comboAnim {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  20%  { opacity: 1; transform: translateX(-50%) translateY(-5px); }
+  70%  { opacity: 1; transform: translateX(-50%) translateY(-5px); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+}
+
+/* Timer ring */
+.timer-ring {
+  width: 36px;
+  height: 36px;
+  position: relative;
+}
+.timer-ring svg {
+  transform: rotate(-90deg);
+}
+.timer-ring-val {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--accent4);
+}
+
+/* Wrong toast */
+.wrong-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--red);
+  color: #fff;
+  padding: 7px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 50;
+}
+.wrong-toast.show {
+  animation: toastAnim 1.5s ease forwards;
+}
+@keyframes toastAnim {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">Tech<span>Match</span></div>
+  <div class="hstats">
+    <div class="hstat">
+      <div class="hstat-label">Score</div>
+      <div class="hstat-val val-score" id="score-display">0</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">Round</div>
+      <div class="hstat-val val-round" id="round-display">1/5</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-label">Time</div>
+      <div class="timer-ring" id="timer-container">
+        <svg width="36" height="36" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="14" fill="none" stroke="var(--border)" stroke-width="3"/>
+          <circle id="timer-arc" cx="18" cy="18" r="14" fill="none" stroke="var(--accent4)" stroke-width="3"
+            stroke-dasharray="88" stroke-dashoffset="0" stroke-linecap="round" style="transition:stroke-dashoffset .5s linear"/>
+        </svg>
+        <div class="timer-ring-val" id="timer-val">60</div>
+      </div>
+    </div>
+  </div>
+  <button class="theme-btn" id="theme-btn" title="Toggle theme">☀️</button>
+</header>
+
+<!-- ROUND BAR -->
+<div class="round-bar">
+  <span class="round-tag" id="round-tag">Round 1</span>
+  <span class="round-desc" id="round-desc">Match each technology to the problem it solves</span>
+  <div class="pip-row" id="pip-row"></div>
+</div>
+
+<!-- MAIN -->
+<div class="game-area">
+  <div class="col">
+    <div class="col-header">Technologies</div>
+    <div id="tech-col"></div>
+  </div>
+  <div class="col-divider"></div>
+  <div class="col">
+    <div class="col-header">Problems Solved</div>
+    <div id="prob-col"></div>
+  </div>
+  <div class="result-panel">
+    <div class="result-panel-header">✓ Matched Pairs</div>
+    <div class="result-list" id="result-list">
+      <div style="padding:20px 0; text-align:center; color:var(--muted); font-size:12px;">
+        Make your first match!
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COMBO FLASH -->
+<div class="combo-flash" id="combo-flash">🔥 COMBO ×2!</div>
+<div class="wrong-toast" id="wrong-toast">❌ Not quite — try again!</div>
+
+<!-- INTRO OVERLAY -->
+<div class="overlay" id="intro-overlay">
+  <div class="overlay-card">
+    <div style="font-size:48px;margin-bottom:12px">🔌</div>
+    <div class="overlay-title">Tech Matchmaker</div>
+    <div class="overlay-sub">Match 25 technologies to the real-world problems they solve. 5 rounds, 5 pairs each. Points for speed and accuracy!</div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;font-size:12px;color:var(--muted)">
+      <span>⚡ Click a tech card</span>
+      <span>→</span>
+      <span>Click its matching problem</span>
+    </div>
+    <button class="btn" onclick="startGame()">▶ Start Game</button>
+  </div>
+</div>
+
+<!-- ROUND END OVERLAY -->
+<div class="overlay hidden" id="round-overlay">
+  <div class="overlay-card">
+    <div class="overlay-title" id="round-end-title">Round Complete!</div>
+    <div class="overlay-sub" id="round-end-sub"></div>
+    <div class="overlay-score" id="round-end-score"></div>
+    <div class="overlay-score-label">points this round</div>
+    <button class="btn" id="next-round-btn" onclick="nextRound()">Next Round →</button>
+  </div>
+</div>
+
+<!-- GAME OVER OVERLAY -->
+<div class="overlay hidden" id="gameover-overlay">
+  <div class="overlay-card">
+    <div class="stars" id="end-stars"></div>
+    <div class="overlay-title" id="end-title"></div>
+    <div class="overlay-sub" id="end-sub"></div>
+    <div class="overlay-score" id="end-score"></div>
+    <div class="overlay-score-label">final score</div>
+    <div style="margin-top:8px;">
+      <button class="btn" onclick="resetGame()">↺ Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────
+const ALL_PAIRS = [
+  {
+    id: 'solar',
+    tech: 'Solar Panels',
+    techSub: 'Photovoltaic cells',
+    icon: '☀️',
+    iconBg: '#3d2000',
+    prob: 'Generating clean electricity from sunlight',
+    probSub: 'Renewable energy',
+    visClass: 'vis-solar',
+    explanation: 'PV cells convert photons into electrons — zero emissions at point of use.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <rect x="20" y="15" width="60" height="50" rx="3" fill="none" stroke="#f5b731" stroke-width="1.5" opacity=".6"/>
+      <line x1="40" y1="15" x2="40" y2="65" stroke="#f5b731" stroke-width=".8" opacity=".4"/>
+      <line x1="60" y1="15" x2="60" y2="65" stroke="#f5b731" stroke-width=".8" opacity=".4"/>
+      <line x1="20" y1="32" x2="80" y2="32" stroke="#f5b731" stroke-width=".8" opacity=".4"/>
+      <line x1="20" y1="48" x2="80" y2="48" stroke="#f5b731" stroke-width=".8" opacity=".4"/>
+      <circle cx="120" cy="25" r="10" fill="#f5b731" opacity=".9">
+        <animate attributeName="r" values="10;13;10" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values=".9;1;.9" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <line x1="120" y1="40" x2="120" y2="65" stroke="#f5b731" stroke-width="2" opacity=".7"/>
+      <rect x="100" y="58" width="40" height="8" rx="2" fill="#f5b731" opacity=".4"/>
+      <text x="155" y="44" font-size="8" fill="#f5b731" opacity=".8">~GWh</text>
+    </svg>`
+  },
+  {
+    id: 'crispr',
+    tech: 'CRISPR-Cas9',
+    techSub: 'Gene editing tool',
+    icon: '🧬',
+    iconBg: '#002800',
+    prob: 'Editing genes to cure hereditary diseases',
+    probSub: 'Genomic medicine',
+    visClass: 'vis-crispr',
+    explanation: 'Molecular scissors that cut DNA at precise locations, enabling gene correction.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <path d="M30,10 C50,20 50,30 30,40 C50,50 50,60 30,70" fill="none" stroke="#3dca84" stroke-width="2" opacity=".7"/>
+      <path d="M50,10 C30,20 30,30 50,40 C30,50 30,60 50,70" fill="none" stroke="#3dca84" stroke-width="2" opacity=".7"/>
+      <line x1="30" y1="20" x2="50" y2="20" stroke="#3dca84" stroke-width="1" opacity=".4"/>
+      <line x1="30" y1="30" x2="50" y2="30" stroke="#3dca84" stroke-width="1" opacity=".4"/>
+      <line x1="30" y1="40" x2="50" y2="40" stroke="#3dca84" stroke-width="1" opacity=".4"/>
+      <line x1="30" y1="50" x2="50" y2="50" stroke="#3dca84" stroke-width="1" opacity=".4"/>
+      <line x1="30" y1="60" x2="50" y2="60" stroke="#3dca84" stroke-width="1" opacity=".4"/>
+      <g transform="translate(100,35)">
+        <rect x="-18" y="-8" width="36" height="16" rx="4" fill="#3dca84" opacity=".2" stroke="#3dca84" stroke-width="1.5"/>
+        <line x1="-18" y1="0" x2="-8" y2="0" stroke="#3dca84" stroke-width="2"/>
+        <line x1="8" y1="0" x2="18" y2="0" stroke="#3dca84" stroke-width="2"/>
+        <polygon points="-6,-5 4,0 -6,5" fill="#3dca84" opacity=".7">
+          <animateTransform attributeName="transform" type="translate" values="0,0;3,0;0,0" dur="1.5s" repeatCount="indefinite"/>
+        </polygon>
+      </g>
+    </svg>`
+  },
+  {
+    id: '5g',
+    tech: '5G Networks',
+    techSub: 'Millimeter-wave cellular',
+    icon: '📡',
+    iconBg: '#001040',
+    prob: 'Enabling ultra-fast wireless data transmission',
+    probSub: 'Connectivity',
+    visClass: 'vis-5g',
+    explanation: '5G delivers ~20 Gbps peak speeds, <1ms latency — enabling IoT at mass scale.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <rect x="88" y="50" width="8" height="20" rx="2" fill="#5a9cf5" opacity=".8"/>
+      <rect x="82" y="68" width="20" height="4" rx="1" fill="#5a9cf5" opacity=".5"/>
+      <path d="M70,40 Q88,20 106,40" fill="none" stroke="#5a9cf5" stroke-width="1.5" opacity=".9">
+        <animate attributeName="opacity" values=".9;0.3;.9" dur="1.2s" repeatCount="indefinite"/>
+      </path>
+      <path d="M58,30 Q88,5 118,30" fill="none" stroke="#5a9cf5" stroke-width="1.5" opacity=".6">
+        <animate attributeName="opacity" values=".6;0.1;.6" dur="1.2s" begin=".2s" repeatCount="indefinite"/>
+      </path>
+      <path d="M45,20 Q88,-10 131,20" fill="none" stroke="#5a9cf5" stroke-width="1.5" opacity=".3">
+        <animate attributeName="opacity" values=".3;0.05;.3" dur="1.2s" begin=".4s" repeatCount="indefinite"/>
+      </path>
+      <text x="148" y="38" font-size="10" fill="#5a9cf5" font-weight="bold" opacity=".9">5G</text>
+      <text x="143" y="50" font-size="7" fill="#5a9cf5" opacity=".6">20 Gbps</text>
+    </svg>`
+  },
+  {
+    id: 'blockchain',
+    tech: 'Blockchain',
+    techSub: 'Distributed ledger',
+    icon: '⛓️',
+    iconBg: '#1a0030',
+    prob: 'Creating tamper-proof decentralized records',
+    probSub: 'Trust & transparency',
+    visClass: 'vis-blockchain',
+    explanation: 'Each block contains a hash of the previous — altering one invalidates all following.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      ${[0,1,2,3].map(i=>`
+      <rect x="${15+i*46}" y="28" width="36" height="24" rx="3" fill="none" stroke="#b57cf7" stroke-width="1.5" opacity="${.9-i*.1}"/>
+      <text x="${33+i*46}" y="43" font-size="7" fill="#b57cf7" text-anchor="middle" opacity=".7">#${i+1}</text>
+      ${i<3?`<line x1="${51+i*46}" y1="40" x2="${61+i*46}" y2="40" stroke="#b57cf7" stroke-width="1.5" opacity=".5"/>
+      <polygon points="${58+i*46},36 ${63+i*46},40 ${58+i*46},44" fill="#b57cf7" opacity=".5">
+        <animate attributeName="opacity" values=".5;1;.5" dur="1.5s" begin="${i*.3}s" repeatCount="indefinite"/>
+      </polygon>`:''}
+      `).join('')}
+    </svg>`
+  },
+  {
+    id: 'neural',
+    tech: 'Neural Networks',
+    techSub: 'Deep learning AI',
+    icon: '🧠',
+    iconBg: '#001428',
+    prob: 'Teaching machines to recognize patterns in data',
+    probSub: 'Artificial intelligence',
+    visClass: 'vis-neural',
+    explanation: 'Layers of artificial neurons learn hierarchical features from raw data.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      ${[0,1,2].map(layer=>{
+        const x = 30 + layer*65;
+        const nodes = [3,4,3][layer];
+        return Array.from({length:nodes},(_,n)=>{
+          const y = 80/(nodes+1)*(n+1);
+          return `<circle cx="${x}" cy="${y}" r="5" fill="#5a9cf5" opacity=".8">
+            <animate attributeName="opacity" values=".8;1;.8" dur="${1+n*.2}s" begin="${n*.1+layer*.15}s" repeatCount="indefinite"/>
+          </circle>`;
+        }).join('');
+      }).join('')}
+      ${[[0,1],[1,2]].map(([l1,l2])=>{
+        const nodes1=[3,4,3][l1], nodes2=[3,4,3][l2];
+        const x1=30+l1*65, x2=30+l2*65;
+        return Array.from({length:nodes1},(_,a)=>
+          Array.from({length:nodes2},(_,b)=>`
+          <line x1="${x1}" y1="${80/(nodes1+1)*(a+1)}" x2="${x2}" y2="${80/(nodes2+1)*(b+1)}" stroke="#5a9cf5" stroke-width=".7" opacity=".2"/>
+          `).join('')
+        ).join('');
+      }).join('')}
+    </svg>`
+  },
+  {
+    id: 'gps',
+    tech: 'GPS Satellites',
+    techSub: 'Global nav system',
+    icon: '🛰️',
+    iconBg: '#001a10',
+    prob: 'Pinpointing exact locations anywhere on Earth',
+    probSub: 'Navigation',
+    visClass: 'vis-gps',
+    explanation: 'Trilateration from ≥4 satellites achieves sub-meter accuracy worldwide.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <circle cx="100" cy="50" r="20" fill="none" stroke="#3dca84" stroke-width="1" opacity=".4"/>
+      <circle cx="100" cy="50" r="3" fill="#3dca84" opacity=".9"/>
+      ${[[30,15],[160,10],[170,60]].map(([sx,sy],i)=>`
+      <circle cx="${sx}" cy="${sy}" r="4" fill="#3dca84" opacity=".7">
+        <animate attributeName="opacity" values=".7;1;.7" dur="${1.5+i*.3}s" repeatCount="indefinite"/>
+      </circle>
+      <line x1="${sx}" y1="${sy}" x2="100" y2="50" stroke="#3dca84" stroke-width=".8" opacity=".3" stroke-dasharray="3,3"/>
+      `).join('')}
+      <circle cx="100" cy="50" r="8" fill="none" stroke="#3dca84" stroke-width="1.5" opacity=".6">
+        <animate attributeName="r" values="8;14;8" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values=".6;0;.6" dur="2s" repeatCount="indefinite"/>
+      </circle>
+    </svg>`
+  },
+  {
+    id: 'mrna',
+    tech: 'mRNA Vaccines',
+    techSub: 'Messenger RNA tech',
+    icon: '💉',
+    iconBg: '#1a0020',
+    prob: 'Rapidly deploying new vaccine formulas at scale',
+    probSub: 'Public health',
+    visClass: 'vis-mrna',
+    explanation: 'mRNA instructs cells to make spike proteins — no live virus needed. Sequences can be updated in days.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <path d="M20,40 Q35,20 50,40 Q65,60 80,40 Q95,20 110,40 Q125,60 140,40" fill="none" stroke="#b57cf7" stroke-width="2" opacity=".8">
+        <animate attributeName="stroke-dasharray" values="0,200;200,0" dur="2s" repeatCount="indefinite"/>
+      </path>
+      <rect x="150" y="25" width="12" height="30" rx="3" fill="#b57cf7" opacity=".4"/>
+      <line x1="162" y1="40" x2="178" y2="40" stroke="#b57cf7" stroke-width="2"/>
+      <circle cx="178" cy="40" r="5" fill="#b57cf7" opacity=".7"/>
+      <text x="155" y="72" font-size="7" fill="#b57cf7" text-anchor="middle" opacity=".7">mRNA</text>
+    </svg>`
+  },
+  {
+    id: 'lidar',
+    tech: 'LIDAR Sensors',
+    techSub: 'Light detection & ranging',
+    icon: '🔭',
+    iconBg: '#141400',
+    prob: 'Mapping 3D environments for self-driving cars',
+    probSub: 'Autonomous sensing',
+    visClass: 'vis-lidar',
+    explanation: 'LIDAR emits 100k+ laser pulses/sec, building centimeter-accurate 3D point clouds.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <circle cx="100" cy="65" r="6" fill="#f5b731" opacity=".9"/>
+      ${Array.from({length:12},(_,i)=>{
+        const angle = (i/12)*Math.PI;
+        const ex = 100 + Math.cos(Math.PI-angle)*70;
+        const ey = 65 - Math.sin(angle)*55;
+        return `<line x1="100" y1="65" x2="${ex}" y2="${ey}" stroke="#f5b731" stroke-width=".8" opacity=".4">
+          <animate attributeName="opacity" values=".4;.9;.4" dur="${1+i*.08}s" begin="${i*.07}s" repeatCount="indefinite"/>
+        </line>
+        <circle cx="${ex}" cy="${ey}" r="2" fill="#f5b731" opacity=".7"/>`;
+      }).join('')}
+    </svg>`
+  },
+  {
+    id: 'desal',
+    tech: 'Desalination',
+    techSub: 'Reverse osmosis',
+    icon: '🌊',
+    iconBg: '#00142a',
+    prob: 'Converting seawater into safe drinking water',
+    probSub: 'Water security',
+    visClass: 'vis-desal',
+    explanation: 'High-pressure membranes filter out salt ions — producing freshwater from ocean water.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <rect x="15" y="20" width="50" height="40" rx="4" fill="#5a9cf5" opacity=".2" stroke="#5a9cf5" stroke-width="1.5"/>
+      <text x="40" y="44" font-size="8" fill="#5a9cf5" text-anchor="middle" opacity=".8">SALT</text>
+      <rect x="90" y="30" width="20" height="20" rx="3" fill="none" stroke="#5a9cf5" stroke-width="1.5" opacity=".7"/>
+      <text x="100" y="43" font-size="6" fill="#5a9cf5" text-anchor="middle">RO</text>
+      <line x1="65" y1="40" x2="90" y2="40" stroke="#5a9cf5" stroke-width="2" opacity=".6"/>
+      <line x1="110" y1="40" x2="140" y2="40" stroke="#3dca84" stroke-width="2" opacity=".6"/>
+      <rect x="140" y="25" width="40" height="30" rx="4" fill="#3dca84" opacity=".15" stroke="#3dca84" stroke-width="1.5"/>
+      <text x="160" y="43" font-size="7" fill="#3dca84" text-anchor="middle" opacity=".8">FRESH</text>
+      <line x1="65" y1="30" x2="75" y2="15" stroke="#ff6b47" stroke-width="1" opacity=".5" stroke-dasharray="3,2"/>
+      <text x="78" y="12" font-size="6" fill="#ff6b47" opacity=".6">↑ brine</text>
+    </svg>`
+  },
+  {
+    id: '3dp',
+    tech: '3D Printing',
+    techSub: 'Additive manufacturing',
+    icon: '🖨️',
+    iconBg: '#1e1000',
+    prob: 'Manufacturing custom objects layer by layer',
+    probSub: 'Fabrication',
+    visClass: 'vis-3dp',
+    explanation: 'FDM, SLA, and SLS printers build parts from digital models — zero tooling cost.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <rect x="70" y="10" width="60" height="8" rx="2" fill="#f5b731" opacity=".7"/>
+      <line x1="100" y1="18" x2="100" y2="35" stroke="#f5b731" stroke-width="2" opacity=".5"/>
+      <circle cx="100" cy="35" r="3" fill="#f5b731" opacity=".9">
+        <animate attributeName="cy" values="35;55;35" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      ${[0,1,2,3,4].map(i=>`
+      <rect x="${75}" y="${55+i*3}" width="${50-i*4}" height="3" rx="1" fill="#f5b731" opacity="${.9-i*.1}"/>
+      `).join('')}
+      <text x="100" y="78" font-size="7" fill="#f5b731" text-anchor="middle" opacity=".6">building...</text>
+    </svg>`
+  },
+  {
+    id: 'facerec',
+    tech: 'Facial Recognition',
+    techSub: 'Biometric identification',
+    icon: '👤',
+    iconBg: '#0d0d1e',
+    prob: 'Instantly identifying individuals from camera feeds',
+    probSub: 'Security & identity',
+    visClass: 'vis-facerec',
+    explanation: 'Deep CNNs extract 128-dimensional face embeddings — matching against databases in milliseconds.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <circle cx="80" cy="38" r="22" fill="none" stroke="#b57cf7" stroke-width="1.5" opacity=".5"/>
+      <circle cx="73" cy="33" r="4" fill="none" stroke="#b57cf7" stroke-width="1.2" opacity=".8"/>
+      <circle cx="87" cy="33" r="4" fill="none" stroke="#b57cf7" stroke-width="1.2" opacity=".8"/>
+      <path d="M70,47 Q80,54 90,47" fill="none" stroke="#b57cf7" stroke-width="1.2" opacity=".8"/>
+      <rect x="58" y="16" width="10" height="10" rx="1" fill="none" stroke="#b57cf7" stroke-width="1" opacity=".6"/>
+      <rect x="112" y="16" width="10" height="10" rx="1" fill="none" stroke="#b57cf7" stroke-width="1" opacity=".6"/>
+      <rect x="58" y="52" width="10" height="10" rx="1" fill="none" stroke="#b57cf7" stroke-width="1" opacity=".6"/>
+      <rect x="112" y="52" width="10" height="10" rx="1" fill="none" stroke="#b57cf7" stroke-width="1" opacity=".6"/>
+      <rect x="140" y="20" width="45" height="8" rx="3" fill="#b57cf7" opacity=".3"/>
+      <rect x="140" y="33" width="35" height="6" rx="3" fill="#b57cf7" opacity=".2"/>
+      <rect x="140" y="44" width="40" height="6" rx="3" fill="#b57cf7" opacity=".2"/>
+      <text x="163" y="63" font-size="8" fill="#3dca84" text-anchor="middle">MATCH ✓</text>
+    </svg>`
+  },
+  {
+    id: 'wind',
+    tech: 'Wind Turbines',
+    techSub: 'Horizontal-axis HAWT',
+    icon: '🌬️',
+    iconBg: '#001428',
+    prob: 'Converting wind kinetic energy into electricity',
+    probSub: 'Clean energy',
+    visClass: 'vis-wind',
+    explanation: 'Modern turbines reach 15+ MW, with blades sweeping areas bigger than football fields.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <line x1="100" y1="70" x2="100" y2="20" stroke="#5a9cf5" stroke-width="3" opacity=".8"/>
+      <g transform="translate(100,22)">
+        <g>
+          <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="3s" repeatCount="indefinite"/>
+          <path d="M0,0 L-8,-28 L0,-3 Z" fill="#5a9cf5" opacity=".8"/>
+          <path d="M0,0 L24,15 L3,0 Z" fill="#5a9cf5" opacity=".8"/>
+          <path d="M0,0 L-16,13 L-3,3 Z" fill="#5a9cf5" opacity=".8"/>
+        </g>
+      </g>
+      <text x="150" y="35" font-size="7" fill="#5a9cf5" text-anchor="middle" opacity=".7">~15MW</text>
+      <rect x="130" y="48" width="40" height="6" rx="3" fill="#5a9cf5" opacity=".15"/>
+      <rect x="130" y="48" width="32" height="6" rx="3" fill="#5a9cf5" opacity=".4">
+        <animate attributeName="width" values="0;32;0" dur="3s" repeatCount="indefinite"/>
+      </rect>
+    </svg>`
+  },
+  {
+    id: 'carbon',
+    tech: 'Carbon Capture',
+    techSub: 'Direct air capture',
+    icon: '🏭',
+    iconBg: '#0a1400',
+    prob: 'Removing CO₂ directly from the atmosphere',
+    probSub: 'Climate tech',
+    visClass: 'vis-carbon',
+    explanation: 'DAC plants use chemical sorbents to pull CO₂ from ambient air for permanent storage.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      ${[0,1,2].map(i=>`
+      <rect x="${30+i*40}" y="45" width="25" height="25" rx="2" fill="none" stroke="#3dca84" stroke-width="1.5" opacity=".7"/>
+      <circle cx="${42+i*40}" cy="${30-i*3}" r="6" fill="none" stroke="#888" stroke-width="1" opacity=".5">
+        <animate attributeName="r" values="6;0;6" dur="${2+i*.4}s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values=".5;0;.5" dur="${2+i*.4}s" repeatCount="indefinite"/>
+      </circle>
+      <text x="${42+i*40}" y="61" font-size="6" fill="#3dca84" text-anchor="middle" opacity=".7">CO₂</text>
+      `).join('')}
+      <path d="M45,25 L155,10" stroke="#3dca84" stroke-width="1" opacity=".3" stroke-dasharray="4,3"/>
+      <text x="158" y="12" font-size="7" fill="#3dca84" opacity=".7">stored</text>
+    </svg>`
+  },
+  {
+    id: 'satnet',
+    tech: 'Satellite Internet',
+    techSub: 'Low Earth orbit mesh',
+    icon: '🌐',
+    iconBg: '#00071e',
+    prob: 'Bringing broadband to remote & rural regions',
+    probSub: 'Digital inclusion',
+    visClass: 'vis-satnet',
+    explanation: 'LEO constellations at 550km altitude provide global coverage with <40ms latency.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <ellipse cx="100" cy="60" rx="40" ry="12" fill="none" stroke="#5a9cf5" stroke-width="1.5" opacity=".5"/>
+      ${[0,1,2].map(i=>{
+        const a=i*120*(Math.PI/180);
+        const sx=100+38*Math.cos(a), sy=60+11*Math.sin(a);
+        return `<circle cx="${sx}" cy="${sy}" r="4" fill="#5a9cf5" opacity=".8">
+          <animateMotion dur="${4+i}s" repeatCount="indefinite">
+            <mpath href="#orbit-path"/>
+          </animateMotion>
+        </circle>`;
+      }).join('')}
+      <ellipse id="orbit-path" cx="100" cy="60" rx="40" ry="12"/>
+      <circle cx="100" cy="60" r="8" fill="#3dca84" opacity=".7"/>
+      <circle cx="100" cy="60" r="3" fill="#3dca84"/>
+      <line x1="60" y1="70" x2="80" y2="65" stroke="#5a9cf5" stroke-width=".8" opacity=".4" stroke-dasharray="3,2"/>
+      <rect x="50" y="68" width="12" height="8" rx="1" fill="none" stroke="#5a9cf5" stroke-width="1" opacity=".5"/>
+      <text x="56" y="75" font-size="5" fill="#5a9cf5" text-anchor="middle" opacity=".6">RX</text>
+    </svg>`
+  },
+  {
+    id: 'smartmeter',
+    tech: 'Smart Meters',
+    techSub: 'IoT energy monitors',
+    icon: '⚡',
+    iconBg: '#1e1800',
+    prob: 'Tracking real-time home energy consumption',
+    probSub: 'Energy efficiency',
+    visClass: 'vis-smartmeter',
+    explanation: 'Smart meters transmit usage every 15 min — enabling dynamic pricing and grid balancing.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <rect x="30" y="15" width="55" height="50" rx="4" fill="none" stroke="#f5b731" stroke-width="1.5" opacity=".8"/>
+      <text x="57" y="35" font-size="12" fill="#f5b731" text-anchor="middle" font-weight="bold">kWh</text>
+      <text x="57" y="50" font-size="10" fill="#f5b731" text-anchor="middle" opacity=".9">
+        <animate attributeName="textContent" values="0.0;1.2;2.4;3.6;4.8;6.0" dur="3s" repeatCount="indefinite"/>4.8
+      </text>
+      <path d="M110,65 L130,30 L145,45 L160,20 L175,35" fill="none" stroke="#3dca84" stroke-width="2" opacity=".8">
+        <animate attributeName="stroke-dasharray" values="0,200;200,0" dur="2s" repeatCount="indefinite"/>
+      </path>
+      <line x1="108" y1="18" x2="108" y2="68" stroke="#3dca84" stroke-width=".5" opacity=".3"/>
+      <line x1="108" y1="68" x2="178" y2="68" stroke="#3dca84" stroke-width=".5" opacity=".3"/>
+    </svg>`
+  },
+  {
+    id: 'drone',
+    tech: 'Drone Delivery',
+    techSub: 'Autonomous UAV logistics',
+    icon: '🚁',
+    iconBg: '#100020',
+    prob: 'Shipping packages without road vehicles',
+    probSub: 'Last-mile logistics',
+    visClass: 'vis-drone',
+    explanation: 'Electric UAVs handle 30-min delivery windows in urban areas — reducing road congestion.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <g>
+        <animateTransform attributeName="transform" type="translate" values="0,0;10,-5;0,3;-8,0;0,0" dur="4s" repeatCount="indefinite"/>
+        <rect x="85" y="33" width="30" height="14" rx="3" fill="none" stroke="#b57cf7" stroke-width="1.5" opacity=".8"/>
+        <rect x="91" y="43" width="18" height="8" rx="2" fill="#b57cf7" opacity=".3"/>
+        <line x1="85" y1="36" x2="70" y2="30" stroke="#b57cf7" stroke-width="1.5" opacity=".7"/>
+        <line x1="115" y1="36" x2="130" y2="30" stroke="#b57cf7" stroke-width="1.5" opacity=".7"/>
+        <line x1="85" y1="44" x2="70" y2="50" stroke="#b57cf7" stroke-width="1.5" opacity=".7"/>
+        <line x1="115" y1="44" x2="130" y2="50" stroke="#b57cf7" stroke-width="1.5" opacity=".7"/>
+        <ellipse cx="70" cy="29" rx="10" ry="3" fill="none" stroke="#b57cf7" stroke-width="1.2" opacity=".6">
+          <animate attributeName="rx" values="10;12;10" dur=".5s" repeatCount="indefinite"/>
+        </ellipse>
+        <ellipse cx="130" cy="29" rx="10" ry="3" fill="none" stroke="#b57cf7" stroke-width="1.2" opacity=".6">
+          <animate attributeName="rx" values="10;12;10" dur=".5s" repeatCount="indefinite"/>
+        </ellipse>
+      </g>
+      <rect x="60" y="62" width="80" height="10" rx="2" fill="#b57cf7" opacity=".1" stroke="#b57cf7" stroke-width=".8"/>
+      <text x="100" y="70" font-size="7" fill="#b57cf7" text-anchor="middle" opacity=".6">DELIVERY ZONE</text>
+    </svg>`
+  },
+  {
+    id: 'vertfarm',
+    tech: 'Vertical Farming',
+    techSub: 'Controlled environment ag',
+    icon: '🌿',
+    iconBg: '#001e0a',
+    prob: 'Growing crops indoors without soil or sunlight',
+    probSub: 'Urban food systems',
+    visClass: 'vis-vertfarm',
+    explanation: 'LED-lit stacked grow beds use 95% less water than field farming — year-round harvest.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      ${[0,1,2,3].map(i=>`
+      <rect x="50" y="${12+i*16}" width="100" height="12" rx="2" fill="none" stroke="#3dca84" stroke-width="1" opacity=".5"/>
+      <rect x="52" y="${13+i*16}" width="${60+i*8}" height="10" rx="1" fill="#3dca84" opacity="${.15+i*.05}"/>
+      ${Array.from({length:8},(_,j)=>`
+      <line x1="${62+j*11}" y1="${13+i*16}" x2="${62+j*11}" y2="${23+i*16}" stroke="#3dca84" stroke-width="2" opacity=".7"/>
+      `).join('')}
+      `).join('')}
+      <rect x="152" y="10" width="30" height="60" rx="3" fill="none" stroke="#f5b731" stroke-width="1" opacity=".3"/>
+      <text x="167" y="43" font-size="7" fill="#f5b731" text-anchor="middle" opacity=".6">LED</text>
+      <text x="167" y="53" font-size="6" fill="#f5b731" text-anchor="middle" opacity=".5">array</text>
+    </svg>`
+  },
+  {
+    id: 'digital',
+    tech: 'Digital Twins',
+    techSub: 'Virtual replica systems',
+    icon: '🪞',
+    iconBg: '#001428',
+    prob: 'Simulating real infrastructure in virtual space',
+    probSub: 'Predictive systems',
+    visClass: 'vis-digital',
+    explanation: 'Real-time sensor data keeps virtual models in sync — enabling predictive maintenance.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <rect x="15" y="20" width="70" height="45" rx="4" fill="none" stroke="#5a9cf5" stroke-width="1.5" opacity=".7"/>
+      <text x="50" y="46" font-size="8" fill="#5a9cf5" text-anchor="middle" opacity=".5">REAL</text>
+      <rect x="115" y="20" width="70" height="45" rx="4" fill="none" stroke="#5a9cf5" stroke-width="1.5" stroke-dasharray="5,3" opacity=".7"/>
+      <text x="150" y="46" font-size="8" fill="#5a9cf5" text-anchor="middle" opacity=".5">VIRTUAL</text>
+      <line x1="85" y1="42" x2="115" y2="42" stroke="#5a9cf5" stroke-width="1.5" opacity=".6" stroke-dasharray="4,2"/>
+      <polygon points="108,38 116,42 108,46" fill="#5a9cf5" opacity=".7">
+        <animate attributeName="opacity" values=".7;1;.7" dur="1s" repeatCount="indefinite"/>
+      </polygon>
+      <text x="100" y="72" font-size="7" fill="#5a9cf5" text-anchor="middle" opacity=".5">← synced →</text>
+    </svg>`
+  },
+  {
+    id: 'edge',
+    tech: 'Edge Computing',
+    techSub: 'Distributed processing',
+    icon: '💾',
+    iconBg: '#200010',
+    prob: 'Processing data near its source to cut latency',
+    probSub: 'Real-time systems',
+    visClass: 'vis-edge',
+    explanation: 'Moving computation to edge nodes reduces round-trips to cloud — enabling <5ms response.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      ${[[20,40],[80,20],[80,60],[160,40]].map(([x,y],i)=>`
+      <rect x="${x-12}" y="${y-10}" width="24" height="20" rx="3" fill="none" stroke="${i===3?'#ff6b47':'#b57cf7'}" stroke-width="1.5" opacity=".8"/>
+      <text x="${x}" y="${y+4}" font-size="6" text-anchor="middle" fill="${i===3?'#ff6b47':'#b57cf7'}" opacity=".8">${i===0?'IoT':i===3?'CLOUD':'EDGE'}</text>
+      `).join('')}
+      <line x1="32" y1="40" x2="68" y2="25" stroke="#b57cf7" stroke-width=".8" opacity=".4" stroke-dasharray="3,2"/>
+      <line x1="32" y1="42" x2="68" y2="55" stroke="#b57cf7" stroke-width=".8" opacity=".4" stroke-dasharray="3,2"/>
+      <line x1="92" y1="25" x2="148" y2="38" stroke="#b57cf7" stroke-width=".8" opacity=".3" stroke-dasharray="5,3"/>
+      <line x1="92" y1="55" x2="148" y2="42" stroke="#b57cf7" stroke-width=".8" opacity=".3" stroke-dasharray="5,3"/>
+      <text x="100" y="75" font-size="6.5" fill="#b57cf7" text-anchor="middle" opacity=".6">⚡ 3ms latency</text>
+    </svg>`
+  },
+  {
+    id: 'quantum',
+    tech: 'Quantum Computing',
+    techSub: 'Qubit-based processor',
+    icon: '⚛️',
+    iconBg: '#001414',
+    prob: 'Solving optimization problems exponentially faster',
+    probSub: 'Computational power',
+    visClass: 'vis-quantum',
+    explanation: 'Superposition lets qubits explore all solutions simultaneously — exponential parallelism.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <circle cx="100" cy="40" r="25" fill="none" stroke="#3dca84" stroke-width="1" opacity=".4"/>
+      <ellipse cx="100" cy="40" rx="25" ry="8" fill="none" stroke="#3dca84" stroke-width="1" opacity=".5"/>
+      <ellipse cx="100" cy="40" rx="8" ry="25" fill="none" stroke="#3dca84" stroke-width="1" opacity=".5"/>
+      <circle cx="100" cy="40" r="4" fill="#3dca84" opacity=".9"/>
+      ${Array.from({length:6},(_,i)=>{
+        const a=i*60*(Math.PI/180);
+        return `<circle cx="${100+22*Math.cos(a)}" cy="${40+22*Math.sin(a)}" r="2.5" fill="#3dca84" opacity=".6">
+          <animate attributeName="opacity" values=".6;1;.6" dur="${1+i*.2}s" repeatCount="indefinite"/>
+        </circle>`;
+      }).join('')}
+      <text x="150" y="30" font-size="8" fill="#3dca84" opacity=".7">|0⟩+|1⟩</text>
+      <text x="150" y="55" font-size="7" fill="#3dca84" opacity=".5">qubit</text>
+    </svg>`
+  },
+  {
+    id: 'bio',
+    tech: 'Biometric Auth',
+    techSub: 'Fingerprint / iris scan',
+    icon: '🔐',
+    iconBg: '#200000',
+    prob: 'Unlocking access using unique body characteristics',
+    probSub: 'Passwordless security',
+    visClass: 'vis-bio',
+    explanation: 'FRR/FAR rates below 0.01% make biometrics far more secure than alphanumeric passwords.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      ${[0,1,2,3,4,5].map(i=>`
+      <path d="M${90+i*2},${60-i*8} Q100,${20-i*2} ${110-i*2},${60-i*8}" fill="none" stroke="#ff6b47" stroke-width="1.2" opacity="${.8-i*.1}"/>
+      `).join('')}
+      <circle cx="100" cy="58" r="3" fill="#ff6b47" opacity=".8"/>
+      <rect x="140" y="25" width="42" height="30" rx="4" fill="none" stroke="#ff6b47" stroke-width="1" opacity=".5"/>
+      <text x="161" y="44" font-size="8" fill="#3dca84" text-anchor="middle">MATCH</text>
+      <text x="161" y="54" font-size="7" fill="#3dca84" text-anchor="middle" opacity=".7">✓</text>
+    </svg>`
+  },
+  {
+    id: 'ar',
+    tech: 'Augmented Reality',
+    techSub: 'Mixed reality overlay',
+    icon: '🥽',
+    iconBg: '#1e1e00',
+    prob: 'Overlaying digital information on the real world',
+    probSub: 'Spatial computing',
+    visClass: 'vis-ar',
+    explanation: 'Simultaneous localization & mapping (SLAM) anchors digital objects in physical space.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <rect x="25" y="15" width="80" height="55" rx="3" fill="none" stroke="#f5b731" stroke-width="1" opacity=".4"/>
+      <circle cx="65" cy="42" r="15" fill="none" stroke="#f5b731" stroke-width=".8" opacity=".3"/>
+      <rect x="50" y="28" width="30" height="28" rx="2" fill="#f5b731" opacity=".06"/>
+      <rect x="115" y="22" width="50" height="15" rx="3" fill="#f5b731" opacity=".2" stroke="#f5b731" stroke-width=".8"/>
+      <rect x="115" y="41" width="38" height="10" rx="2" fill="#f5b731" opacity=".15" stroke="#f5b731" stroke-width=".8"/>
+      <rect x="115" y="55" width="44" height="10" rx="2" fill="#f5b731" opacity=".12" stroke="#f5b731" stroke-width=".8"/>
+      <text x="140" y="32" font-size="6" fill="#f5b731" text-anchor="middle" opacity=".8">OBJECT INFO</text>
+      <line x1="105" y1="35" x2="115" y2="29" stroke="#f5b731" stroke-width=".8" opacity=".5" stroke-dasharray="2,2"/>
+    </svg>`
+  },
+  {
+    id: 'av',
+    tech: 'Autonomous Vehicles',
+    techSub: 'Self-driving system',
+    icon: '🚗',
+    iconBg: '#001e00',
+    prob: 'Navigating roads without a human driver',
+    probSub: 'Transportation AI',
+    visClass: 'vis-av',
+    explanation: 'Sensor fusion (camera + LIDAR + radar) feeds real-time path planning at 100Hz.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <line x1="10" y1="68" x2="190" y2="68" stroke="#3dca84" stroke-width="1" opacity=".4"/>
+      <line x1="10" y1="55" x2="190" y2="55" stroke="#3dca84" stroke-width=".5" opacity=".2" stroke-dasharray="10,8"/>
+      <rect x="70" y="44" width="45" height="22" rx="4" fill="none" stroke="#3dca84" stroke-width="1.5" opacity=".8"/>
+      <rect x="80" y="38" width="25" height="10" rx="3" fill="none" stroke="#3dca84" stroke-width="1.2" opacity=".6"/>
+      <circle cx="80" cy="67" r="5" fill="none" stroke="#3dca84" stroke-width="1.5" opacity=".7"/>
+      <circle cx="105" cy="67" r="5" fill="none" stroke="#3dca84" stroke-width="1.5" opacity=".7"/>
+      <path d="M92,44 Q92,25 125,22" fill="none" stroke="#f5b731" stroke-width="1" opacity=".6" stroke-dasharray="3,2"/>
+      <circle cx="125" cy="22" r="3" fill="#f5b731" opacity=".7"/>
+      <text x="133" y="20" font-size="6" fill="#f5b731" opacity=".7">path</text>
+    </svg>`
+  },
+  {
+    id: 'grid',
+    tech: 'Smart Grids',
+    techSub: 'Intelligent power network',
+    icon: '🔋',
+    iconBg: '#200a0a',
+    prob: 'Balancing electricity supply and demand in real-time',
+    probSub: 'Grid management',
+    visClass: 'vis-grid',
+    explanation: 'Two-way communication between utilities and consumers enables dynamic load balancing.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      ${[[20,40],[60,15],[60,65],[140,15],[140,65],[180,40]].map(([x,y],i)=>`
+      <circle cx="${x}" cy="${y}" r="5" fill="${['#f5b731','#3dca84','#3dca84','#5a9cf5','#5a9cf5','#ff6b47'][i]}" opacity=".8">
+        <animate attributeName="opacity" values=".8;1;.8" dur="${1.2+i*.2}s" repeatCount="indefinite"/>
+      </circle>
+      `).join('')}
+      ${[[0,1],[0,2],[1,3],[1,4],[2,3],[2,4],[3,5],[4,5]].map(([a,b])=>{
+        const pts=[[20,40],[60,15],[60,65],[140,15],[140,65],[180,40]];
+        return `<line x1="${pts[a][0]}" y1="${pts[a][1]}" x2="${pts[b][0]}" y2="${pts[b][1]}" stroke="rgba(255,255,255,.15)" stroke-width="1"/>`;
+      }).join('')}
+      <text x="100" y="76" font-size="7" fill="#f5b731" text-anchor="middle" opacity=".7">⚡ BALANCED</text>
+    </svg>`
+  },
+  {
+    id: 'bci',
+    tech: 'Brain-Computer Interface',
+    techSub: 'Neural signal decoder',
+    icon: '🧠',
+    iconBg: '#0e0020',
+    prob: 'Letting thoughts directly control digital devices',
+    probSub: 'Neurotechnology',
+    visClass: 'vis-bci',
+    explanation: 'EEG/ECoG electrodes decode motor cortex signals — translating intention into commands.',
+    visSvg: `<svg class="vis-svg" viewBox="0 0 200 80">
+      <ellipse cx="65" cy="40" rx="30" ry="28" fill="none" stroke="#b57cf7" stroke-width="1.5" opacity=".6"/>
+      <path d="M65,12 C75,12 80,20 80,28 C80,36 72,40 65,40 C58,40 50,36 50,28 C50,20 55,12 65,12" fill="none" stroke="#b57cf7" stroke-width=".8" opacity=".4"/>
+      <path d="M20,40 L40,38 L45,32 L50,44 L55,28 L60,50 L65,25 L70,52 L75,30 L80,48 L85,38 L90,40" fill="none" stroke="#b57cf7" stroke-width="1.5" opacity=".8">
+        <animate attributeName="stroke-dasharray" values="0,200;200,0" dur="2s" repeatCount="indefinite"/>
+      </path>
+      <line x1="95" y1="40" x2="130" y2="40" stroke="#b57cf7" stroke-width="1.5" opacity=".5" stroke-dasharray="4,2"/>
+      <rect x="130" y="28" width="50" height="24" rx="4" fill="none" stroke="#b57cf7" stroke-width="1" opacity=".5"/>
+      <text x="155" y="43" font-size="8" fill="#b57cf7" text-anchor="middle" opacity=".8">CLICK</text>
+    </svg>`
+  }
+];
+
+const ROUNDS = [
+  ALL_PAIRS.slice(0, 5),
+  ALL_PAIRS.slice(5, 10),
+  ALL_PAIRS.slice(10, 15),
+  ALL_PAIRS.slice(15, 20),
+  ALL_PAIRS.slice(20, 25),
+];
+
+// ─── STATE ──────────────────────────────────────────────────────────
+let currentRound = 0;
+let score = 0;
+let selectedTech = null;
+let matchedIds = new Set();
+let wrongPairs = new Set();
+let roundScore = 0;
+let timerInterval = null;
+let timeLeft = 60;
+let combo = 0;
+let totalPairs = 0;
+let totalCorrect = 0;
+const TIMER_MAX = 60;
+const CIRCUMFERENCE = 88;
+
+// ─── HELPERS ────────────────────────────────────────────────────────
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getAccent(idx) {
+  return ['var(--accent1)', 'var(--accent2)', 'var(--accent3)', 'var(--accent4)', 'var(--accent5)'][idx % 5];
+}
+
+// ─── RENDER ─────────────────────────────────────────────────────────
+function renderRound() {
+  const pairs = ROUNDS[currentRound];
+  const shuffledProbs = shuffle(pairs);
+
+  // Pips
+  const pipRow = document.getElementById('pip-row');
+  pipRow.innerHTML = pairs.map(() => `<div class="pip"></div>`).join('');
+
+  document.getElementById('round-tag').textContent = `Round ${currentRound + 1}`;
+  document.getElementById('round-display').textContent = `${currentRound + 1}/5`;
+
+  // Tech column
+  const techCol = document.getElementById('tech-col');
+  techCol.innerHTML = '';
+  pairs.forEach((pair, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.id = pair.id;
+    card.dataset.type = 'tech';
+    card.innerHTML = `
+      <div class="card-icon" style="background:${pair.iconBg}">${pair.icon}</div>
+      <div class="card-body">
+        <div class="card-title">${pair.tech}</div>
+        <div class="card-sub">${pair.techSub}</div>
+      </div>
+      <div class="match-badge">✓</div>
+    `;
+    card.addEventListener('click', () => onTechClick(pair.id));
+    techCol.appendChild(card);
+  });
+
+  // Prob column
+  const probCol = document.getElementById('prob-col');
+  probCol.innerHTML = '';
+  shuffledProbs.forEach((pair, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.id = pair.id;
+    card.dataset.type = 'prob';
+    card.innerHTML = `
+      <div class="card-icon" style="background:${pair.iconBg};font-size:14px;color:var(--muted)">?</div>
+      <div class="card-body">
+        <div class="card-title">${pair.prob}</div>
+        <div class="card-sub">${pair.probSub}</div>
+      </div>
+      <div class="match-badge">✓</div>
+    `;
+    card.addEventListener('click', () => onProbClick(pair.id));
+    probCol.appendChild(card);
+  });
+
+  // Clear result list
+  document.getElementById('result-list').innerHTML = `
+    <div style="padding:20px 0; text-align:center; color:var(--muted); font-size:12px;">
+      Make your first match!
+    </div>
+  `;
+
+  matchedIds.clear();
+  wrongPairs.clear();
+  selectedTech = null;
+  roundScore = 0;
+  startTimer();
+}
+
+function onTechClick(id) {
+  if (matchedIds.has(id)) return;
+  selectedTech = id;
+  // Highlight selected
+  document.querySelectorAll('[data-type="tech"]').forEach(c => {
+    c.classList.toggle('selected', c.dataset.id === id);
+  });
+}
+
+function onProbClick(id) {
+  if (!selectedTech) return;
+  if (matchedIds.has(id) || matchedIds.has(selectedTech)) return;
+
+  if (selectedTech === id) {
+    // ✓ CORRECT
+    combo++;
+    const basePoints = 100;
+    const timeBonus = Math.floor(timeLeft * 1.5);
+    const comboBonus = combo > 1 ? (combo - 1) * 20 : 0;
+    const pts = basePoints + timeBonus + comboBonus;
+    score += pts;
+    roundScore += pts;
+    totalCorrect++;
+    totalPairs++;
+    matchedIds.add(id);
+    document.getElementById('score-display').textContent = score;
+
+    // Mark both cards
+    const techCard = document.querySelector(`[data-type="tech"][data-id="${id}"]`);
+    const probCard = document.querySelector(`[data-type="prob"][data-id="${id}"]`);
+    if (techCard) techCard.classList.add('matched');
+    if (probCard) probCard.classList.add('matched');
+
+    // Pip
+    const pips = document.querySelectorAll('.pip');
+    pips[matchedIds.size - 1]?.classList.add('matched');
+
+    if (combo >= 2) showCombo(combo);
+
+    addResult(id, pts);
+
+    selectedTech = null;
+    document.querySelectorAll('[data-type="tech"]').forEach(c => c.classList.remove('selected'));
+
+    if (matchedIds.size === ROUNDS[currentRound].length) {
+      stopTimer();
+      setTimeout(showRoundEnd, 600);
+    }
+
+  } else {
+    // ✗ WRONG
+    combo = 0;
+    totalPairs++;
+    const techCard = document.querySelector(`[data-type="tech"][data-id="${selectedTech}"]`);
+    const probCard = document.querySelector(`[data-type="prob"][data-id="${id}"]`);
+    if (techCard) { techCard.classList.add('wrong'); setTimeout(() => techCard.classList.remove('wrong'), 400); }
+    if (probCard) { probCard.classList.add('wrong'); setTimeout(() => probCard.classList.remove('wrong'), 400); }
+    showWrongToast();
+    selectedTech = null;
+    document.querySelectorAll('[data-type="tech"]').forEach(c => c.classList.remove('selected'));
+  }
+}
+
+function addResult(id, pts) {
+  const pair = ALL_PAIRS.find(p => p.id === id);
+  const list = document.getElementById('result-list');
+  // Remove placeholder
+  const placeholder = list.querySelector('[style]');
+  if (placeholder) placeholder.remove();
+
+  const item = document.createElement('div');
+  item.className = 'result-item';
+  item.innerHTML = `
+    <div class="result-vis ${pair.visClass}">${pair.visSvg}</div>
+    <div class="result-info">
+      <div class="result-pair">${pair.tech} → ${pair.prob.split(' ').slice(0,4).join(' ')}…</div>
+      <div class="result-explanation">${pair.explanation}</div>
+      <div style="margin-top:5px;font-size:10px;color:var(--accent3);font-weight:600">+${pts} pts</div>
+    </div>
+  `;
+  list.prepend(item);
+}
+
+function showCombo(n) {
+  const el = document.getElementById('combo-flash');
+  el.textContent = `🔥 ${n}× COMBO! +${(n-1)*20} bonus`;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+}
+
+function showWrongToast() {
+  const el = document.getElementById('wrong-toast');
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+}
+
+// ─── TIMER ──────────────────────────────────────────────────────────
+function startTimer() {
+  stopTimer();
+  timeLeft = TIMER_MAX;
+  updateTimerUI();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerUI();
+    if (timeLeft <= 0) {
+      stopTimer();
+      // Auto-match remaining or show round end
+      totalPairs += (ROUNDS[currentRound].length - matchedIds.size) * 2; // count misses
+      showRoundEnd();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function updateTimerUI() {
+  document.getElementById('timer-val').textContent = timeLeft;
+  const pct = timeLeft / TIMER_MAX;
+  const offset = CIRCUMFERENCE * (1 - pct);
+  document.getElementById('timer-arc').style.strokeDashoffset = offset;
+  document.getElementById('timer-arc').style.stroke =
+    timeLeft > 30 ? 'var(--accent4)' : timeLeft > 10 ? 'var(--accent1)' : 'var(--red)';
+}
+
+// ─── OVERLAYS ───────────────────────────────────────────────────────
+function showRoundEnd() {
+  const overlay = document.getElementById('round-overlay');
+  const pct = Math.round((matchedIds.size / ROUNDS[currentRound].length) * 100);
+  document.getElementById('round-end-title').textContent =
+    pct === 100 ? '🎯 Perfect Round!' : pct >= 60 ? '✅ Round Complete' : '⏱ Round Over';
+  document.getElementById('round-end-sub').textContent =
+    `You matched ${matchedIds.size}/${ROUNDS[currentRound].length} pairs correctly.`;
+  document.getElementById('round-end-score').textContent = roundScore;
+  document.getElementById('next-round-btn').textContent =
+    currentRound < 4 ? 'Next Round →' : '🏆 See Results';
+  overlay.classList.remove('hidden');
+}
+
+function nextRound() {
+  document.getElementById('round-overlay').classList.add('hidden');
+  if (currentRound < 4) {
+    currentRound++;
+    renderRound();
+  } else {
+    showGameOver();
+  }
+}
+
+function showGameOver() {
+  const accuracy = totalPairs > 0 ? Math.round((totalCorrect / totalPairs) * 100) : 0;
+  let stars = '⭐⭐⭐';
+  let title = '🏆 Brilliant!';
+  let sub = 'You know your tech!';
+  if (score < 800)  { stars = '⭐'; title = 'Keep Learning'; sub = 'Try again to beat your score!'; }
+  else if (score < 1800) { stars = '⭐⭐'; title = 'Good Work!'; sub = `${accuracy}% accuracy — room to improve.`; }
+  else { title = '🏆 Tech Expert!'; sub = `${accuracy}% accuracy. Incredible!`; }
+
+  document.getElementById('end-stars').textContent = stars;
+  document.getElementById('end-title').textContent = title;
+  document.getElementById('end-sub').textContent = sub;
+  document.getElementById('end-score').textContent = score;
+  document.getElementById('gameover-overlay').classList.remove('hidden');
+}
+
+function startGame() {
+  document.getElementById('intro-overlay').classList.add('hidden');
+  currentRound = 0;
+  score = 0;
+  totalPairs = 0;
+  totalCorrect = 0;
+  combo = 0;
+  document.getElementById('score-display').textContent = '0';
+  renderRound();
+}
+
+function resetGame() {
+  document.getElementById('gameover-overlay').classList.add('hidden');
+  currentRound = 0;
+  score = 0;
+  totalPairs = 0;
+  totalCorrect = 0;
+  combo = 0;
+  document.getElementById('score-display').textContent = '0';
+  renderRound();
+}
+
+// ─── THEME ──────────────────────────────────────────────────────────
+const themeBtn = document.getElementById('theme-btn');
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('tm-theme', theme);
+}
+
+themeBtn.addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+});
+
+// Init theme from storage
+const savedTheme = localStorage.getItem('tm-theme') || 'dark';
+applyTheme(savedTheme);
+</script>
+</body>
+</html>
