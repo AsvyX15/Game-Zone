@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI or Human?</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: oklch(14% 0.01 250);
+  --surf: oklch(18% 0.012 250);
+  --bord: oklch(24% 0.015 250);
+  --text: oklch(90% 0.01 250);
+  --mute: oklch(52% 0.02 250);
+  --ai: oklch(68% 0.18 290);
+  --human: oklch(70% 0.18 145);
+  --wrong: oklch(65% 0.2 25);
+  --gold: oklch(78% 0.16 85);
+}
+
+html, body {
+  height: 100%; background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* ── LAYOUT ── */
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ── HEADER ── */
+.hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 0 10px;
+  border-bottom: 1px solid var(--bord);
+}
+.logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px; letter-spacing: .02em;
+}
+.logo span { color: var(--ai); }
+.progress-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.pips { display: flex; gap: 5px; }
+.pip {
+  width: 22px; height: 6px; border-radius: 3px;
+  background: var(--bord);
+  transition: background .4s;
+}
+.pip.correct { background: var(--human); }
+.pip.wrong { background: var(--wrong); }
+.pip.current { background: var(--mute); animation: pulse-pip .9s infinite alternate; }
+@keyframes pulse-pip { to { opacity: .4; } }
+.round-label {
+  font-size: 12px; color: var(--mute); min-width: 50px; text-align: right;
+}
+
+/* ── MAIN ── */
+.main {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 20px; padding: 16px 0;
+  min-height: 0;
+}
+
+/* ── CONTENT CARD ── */
+.content-wrap {
+  width: 100%; position: relative;
+}
+.content-card {
+  background: var(--surf);
+  border: 1px solid var(--bord);
+  border-radius: 16px;
+  padding: 28px 32px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .4s;
+  min-height: 200px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.content-card.reveal-ai { border-color: var(--ai); }
+.content-card.reveal-human { border-color: var(--human); }
+
+.content-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 60%, oklch(18% 0.018 250) 100%);
+  pointer-events: none;
+}
+
+.card-type {
+  font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--mute); font-weight: 600;
+}
+.card-type .type-icon { margin-right: 5px; }
+
+.card-content {
+  font-size: 15px; line-height: 1.75;
+  color: oklch(85% 0.01 250);
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  flex: 1;
+}
+
+/* ── SHIMMER on entry ── */
+.shimmer-overlay {
+  position: absolute; inset: 0; pointer-events: none; border-radius: 16px;
+  background: linear-gradient(90deg, transparent 0%, oklch(90% 0.01 250 / .04) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer .7s ease-out forwards;
+}
+@keyframes shimmer {
+  from { background-position: -100% 0; opacity: 1; }
+  to { background-position: 200% 0; opacity: 0; }
+}
+
+/* ── SIGNAL METER ── */
+.signals {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;
+}
+.sig {
+  font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600;
+  border: 1px solid; opacity: 0;
+  transition: opacity .3s;
+}
+.sig.visible { opacity: 1; }
+.sig-ai { color: var(--ai); border-color: oklch(68% 0.18 290 / .4); background: oklch(68% 0.18 290 / .08); }
+.sig-human { color: var(--human); border-color: oklch(70% 0.18 145 / .4); background: oklch(70% 0.18 145 / .08); }
+
+/* ── ANSWER REVEAL ── */
+.answer-banner {
+  position: absolute; inset: 0; border-radius: 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .35s;
+  z-index: 4;
+  padding: 28px 32px;
+  text-align: center;
+}
+.answer-banner.show { opacity: 1; }
+.answer-banner.correct-banner { background: oklch(70% 0.18 145 / .97); }
+.answer-banner.wrong-banner { background: oklch(65% 0.2 25 / .97); }
+
+.banner-result {
+  font-size: 28px; font-family: 'DM Serif Display', serif;
+  font-weight: 700; color: #fff;
+}
+.banner-label {
+  font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+  color: rgba(255,255,255,.7); font-weight: 600;
+}
+.banner-explanation {
+  font-size: 13px; line-height: 1.65; color: rgba(255,255,255,.9);
+  max-width: 520px;
+}
+.banner-origin {
+  font-size: 11px; padding: 4px 12px; border-radius: 20px;
+  background: rgba(0,0,0,.25); color: rgba(255,255,255,.75);
+  font-weight: 500;
+}
+
+/* ── BUTTONS ── */
+.btn-row {
+  display: flex; gap: 12px; width: 100%;
+}
+.btn {
+  flex: 1; padding: 14px 0; border-radius: 12px;
+  border: 2px solid; font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform .12s, box-shadow .15s, background .15s, opacity .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  letter-spacing: .01em;
+}
+.btn:hover:not(:disabled) { transform: translateY(-2px); }
+.btn:active:not(:disabled) { transform: translateY(0); }
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+
+.btn-ai {
+  background: oklch(68% 0.18 290 / .1);
+  border-color: var(--ai); color: var(--ai);
+}
+.btn-ai:hover:not(:disabled) {
+  background: oklch(68% 0.18 290 / .22);
+  box-shadow: 0 6px 24px oklch(68% 0.18 290 / .3);
+}
+.btn-human {
+  background: oklch(70% 0.18 145 / .1);
+  border-color: var(--human); color: var(--human);
+}
+.btn-human:hover:not(:disabled) {
+  background: oklch(70% 0.18 145 / .22);
+  box-shadow: 0 6px 24px oklch(70% 0.18 145 / .3);
+}
+
+.btn.selected-ai { background: oklch(68% 0.18 290 / .3); }
+.btn.selected-human { background: oklch(70% 0.18 145 / .3); }
+
+.next-btn {
+  background: var(--text); color: var(--bg);
+  border-color: var(--text);
+  padding: 12px 32px; flex: 0; min-width: 160px;
+  font-size: 14px;
+}
+.next-btn:hover { box-shadow: 0 6px 24px oklch(90% 0.01 250 / .2); }
+
+/* ── SCORE BAR ── */
+.score-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0 14px;
+  border-top: 1px solid var(--bord);
+  font-size: 13px;
+}
+.score-left { display: flex; align-items: center; gap: 16px; }
+.score-num { font-size: 22px; font-weight: 600; color: var(--gold); line-height: 1; }
+.score-label { font-size: 10px; color: var(--mute); letter-spacing: .1em; text-transform: uppercase; }
+.streak { font-size: 12px; color: var(--mute); }
+.streak span { color: var(--gold); }
+
+/* ── VERDICT FLASH ── */
+.verdict-flash {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(.6);
+  font-size: 72px; pointer-events: none; opacity: 0;
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), opacity .2s;
+  z-index: 99;
+  filter: drop-shadow(0 0 20px rgba(255,255,255,.4));
+}
+.verdict-flash.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+.verdict-flash.hide { opacity: 0; transform: translate(-50%,-50%) scale(1.4); transition: opacity .3s, transform .3s; }
+
+/* ── END SCREEN ── */
+.end-screen {
+  display: none;
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 24px; height: 100%;
+  text-align: center;
+  padding: 32px 0;
+}
+.end-screen.show { display: flex; }
+.end-big {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(48px, 8vw, 80px);
+  line-height: 1;
+  background: linear-gradient(135deg, var(--gold), var(--ai));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.end-sub { font-size: 16px; color: var(--mute); }
+.end-breakdown {
+  display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;
+}
+.end-stat {
+  background: var(--surf); border: 1px solid var(--bord);
+  border-radius: 12px; padding: 18px 28px; text-align: center;
+}
+.end-stat-num { font-size: 32px; font-weight: 700; color: var(--text); }
+.end-stat-label { font-size: 10px; color: var(--mute); text-transform: uppercase; letter-spacing: .1em; margin-top: 4px; }
+.replay-btn {
+  background: var(--ai); color: #fff; border: none;
+  padding: 14px 40px; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: transform .12s, box-shadow .15s;
+  letter-spacing: .02em;
+}
+.replay-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px oklch(68% 0.18 290 / .4); }
+
+.end-verdict {
+  font-size: 15px; max-width: 420px; line-height: 1.65;
+  color: oklch(75% 0.02 250);
+}
+
+/* ── AI indicator shimmer on card ── */
+.glow-ai { box-shadow: 0 0 0 2px oklch(68% 0.18 290 / .5), 0 8px 40px oklch(68% 0.18 290 / .15); }
+.glow-human { box-shadow: 0 0 0 2px oklch(70% 0.18 145 / .5), 0 8px 40px oklch(70% 0.18 145 / .15); }
+
+/* ── THINKING BAR ── */
+.thinking {
+  height: 3px; border-radius: 2px;
+  background: var(--bord);
+  width: 100%; overflow: hidden;
+  margin-bottom: -4px;
+}
+.thinking-bar {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--ai), var(--human));
+  width: 0; transition: width linear;
+}
+</style>
+</head>
+<body>
+<!-- ETx Game Zone — Back to Homepage button -->
+<a href="index.html" id="etx-back-btn" aria-label="Back to homepage" title="Back to Game Zone">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+  </svg>
+  <span>Game Zone</span>
+</a>
+<style id="etx-back-btn-style">
+#etx-back-btn{
+  position:fixed;
+  top:14px;left:14px;
+  z-index:2147483647;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 14px 9px 11px;
+  background:rgba(8,10,20,.72);
+  color:#e8eaff;
+  border:1px solid rgba(140,160,220,.28);
+  border-radius:100px;
+  text-decoration:none;
+  font-family:'JetBrains Mono','Space Grotesk',ui-monospace,SFMono-Regular,Menlo,monospace,sans-serif;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:1px;
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  box-shadow:0 4px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06);
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),background .25s,border-color .25s,box-shadow .25s,padding .25s;
+  cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+#etx-back-btn svg{
+  width:16px;height:16px;
+  flex-shrink:0;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1);
+}
+#etx-back-btn span{
+  white-space:nowrap;
+  text-transform:uppercase;
+}
+#etx-back-btn:hover{
+  background:rgba(94,126,255,.18);
+  border-color:rgba(94,126,255,.55);
+  box-shadow:0 8px 30px rgba(94,126,255,.35),inset 0 1px 0 rgba(255,255,255,.1);
+  transform:translateY(-1px);
+}
+#etx-back-btn:hover svg{transform:translateX(-3px)}
+#etx-back-btn:active{transform:translateY(0)}
+#etx-back-btn:focus-visible{
+  outline:2px solid #5e7eff;
+  outline-offset:3px;
+}
+@media(max-width:600px){
+  #etx-back-btn{
+    padding:8px;
+    border-radius:50%;
+  }
+  #etx-back-btn span{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  #etx-back-btn,#etx-back-btn svg{transition:none}
+}
+</style>
+
+
+<div class="app" id="app">
+  <header class="hdr">
+    <div class="logo"><span>AI</span> or Human?</div>
+    <div class="progress-row">
+      <div class="pips" id="pips"></div>
+      <div class="round-label" id="round-label">1 / 12</div>
+    </div>
+  </header>
+
+  <div class="main" id="main-area">
+    <div class="thinking"><div class="thinking-bar" id="thinking-bar"></div></div>
+
+    <div class="content-wrap">
+      <div class="content-card" id="content-card">
+        <div class="shimmer-overlay" id="shimmer"></div>
+        <div class="card-type" id="card-type">
+          <span class="type-icon">📧</span>Email
+        </div>
+        <div class="card-content" id="card-content">Loading…</div>
+        <div class="signals" id="signals"></div>
+
+        <div class="answer-banner" id="answer-banner">
+          <div class="banner-label" id="banner-label">Correct!</div>
+          <div class="banner-result" id="banner-result">It was AI</div>
+          <div class="banner-origin" id="banner-origin"></div>
+          <div class="banner-explanation" id="banner-explanation"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row" id="btn-row">
+      <button class="btn btn-ai" id="btn-ai" onclick="guess('ai')">
+        🤖 AI-Generated
+      </button>
+      <button class="btn btn-human" id="btn-human" onclick="guess('human')">
+        ✍️ Human-Written
+      </button>
+    </div>
+  </div>
+
+  <div class="score-bar">
+    <div class="score-left">
+      <div>
+        <div class="score-num" id="score-num">0</div>
+        <div class="score-label">Score</div>
+      </div>
+      <div class="streak" id="streak-label"></div>
+    </div>
+    <div style="font-size:12px;color:var(--mute)">
+      Spot the difference between human creativity & machine text
+    </div>
+  </div>
+</div>
+
+<div class="end-screen" id="end-screen">
+  <div class="end-big" id="end-big">8/12</div>
+  <div class="end-sub" id="end-sub">Not bad</div>
+  <div class="end-verdict" id="end-verdict"></div>
+  <div class="end-breakdown" id="end-breakdown"></div>
+  <button class="replay-btn" onclick="init()">Play Again</button>
+</div>
+
+<div class="verdict-flash" id="verdict-flash"></div>
+
+<script>
+const ROUNDS = [
+  {
+    type: 'email', icon: '📧',
+    source: 'AI',
+    content: `Hi Sarah, \n\nI hope this email finds you well! I wanted to reach out to discuss the upcoming project timeline and ensure we are all aligned on our key deliverables. Please let me know your availability for a quick sync this week. \n\nBest regards,\nMike`,
+    explanation: `The opening "I hope this email finds you well!" is a classic AI tell — it's polite but hollow. The corporate phrasing, symmetrical structure, and the phrase "ensure we are all aligned" are statistically common in AI-generated emails. Humans tend to reference shared context or be more direct.`,
+    signals: [{label:'Hollow opener', t:'ai'},{label:'Corporate template feel', t:'ai'},{label:'No personal detail', t:'ai'}]
+  },
+  {
+    type: 'poem', icon: '🖊️',
+    source: 'Human',
+    content: `The moths have eaten through my grandmother's coat.\nI found it this morning — a whole afternoon\nof silk gone yellow, buttons missing teeth,\nsmelling of something I can't name anymore.`,
+    explanation: `The sensory specificity here is distinctly human — "buttons missing teeth," the unnamed smell of memory. AI tends toward more universal, abstract imagery. This poem fragment is from a human poet working in the confessional tradition, drawing on lived, unglamorous loss.`,
+    signals: [{label:'Specific sensory memory', t:'human'},{label:'Understated grief', t:'human'},{label:'Unexpected metaphor', t:'human'}]
+  },
+  {
+    type: 'review', icon: '⭐',
+    source: 'AI',
+    content: `This restaurant offers an exceptional dining experience with a diverse menu that caters to various dietary preferences. The ambiance is cozy and inviting, and the staff is attentive and professional. The food was delicious and presented beautifully. Highly recommended for special occasions or a casual night out!`,
+    explanation: `The review covers every base without specifics: no dish named, no moment recalled. Phrases like "cozy and inviting" and "attentive and professional" are AI-common adjective pairs. Real reviewers tend to anchor on one strong memory — a specific dish, an awkward table, a funny server. This is generated text.`,
+    signals: [{label:'"Cozy and inviting"', t:'ai'},{label:'Zero specific dishes', t:'ai'},{label:'Covers all bases evenly', t:'ai'}]
+  },
+  {
+    type: 'text message', icon: '💬',
+    source: 'Human',
+    content: `ok so I KNOW you said don't text during the meeting but my boss just said "let's circle back on synergies" and I blacked out for a second\n\nalso are we still doing dinner at the weird falafel place or did that fall through`,
+    explanation: `The tonal inconsistency — caps for emphasis, the ironic mimicry of corporate speak, the casual multi-question format — is classic human texting. AI generating a text typically produces something more syntactically complete. The lowercase fragmentation and "blacked out" are organic human voice.`,
+    signals: [{label:'Tonal dissonance', t:'human'},{label:'Lowercase fragmentation', t:'human'},{label:'Personal in-joke reference', t:'human'}]
+  },
+  {
+    type: 'essay excerpt', icon: '📝',
+    source: 'AI',
+    content: `Social media has fundamentally transformed the way we communicate and interact with one another. While it has provided unprecedented opportunities for connection, it has also raised significant concerns about privacy, mental health, and the spread of misinformation. To harness its benefits while mitigating its risks, society must adopt a balanced and thoughtful approach.`,
+    explanation: `This reads like a five-paragraph essay introduction generated to a prompt. Every sentence is a thesis-level claim, no tension exists, and the conclusion — "balanced and thoughtful approach" — is the quintessential AI hedge. Humans writing about social media tend to have an angle, a grudge, or a specific provocation.`,
+    signals: [{label:'Thesis-only structure', t:'ai'},{label:'"Balanced and thoughtful"', t:'ai'},{label:'No original stance', t:'ai'}]
+  },
+  {
+    type: 'journal entry', icon: '📓',
+    source: 'Human',
+    content: `Tuesday, maybe 2am. Can't sleep again. I keep replaying the conversation by the car and wondering if I said the right thing or just the convenient thing. There's a difference and I think I know which one it was.`,
+    explanation: `"Tuesday, maybe 2am" is telling — the uncertainty about day/time is human. The self-interrogation between "right" and "convenient" is a moral distinction that feels lived. The final sentence's quiet self-accusation without resolution is not how AI tends to end — it would usually resolve or explain.`,
+    signals: [{label:'Uncertain timestamp', t:'human'},{label:'Unresolved guilt', t:'human'},{label:'No conclusion offered', t:'human'}]
+  },
+  {
+    type: 'product description', icon: '🛍️',
+    source: 'AI',
+    content: `Elevate your morning routine with our premium ceramic pour-over coffee set. Crafted with precision and attention to detail, this elegant set combines functionality with aesthetic appeal. The smooth, glazed finish adds a touch of sophistication to any kitchen. Perfect for coffee enthusiasts who appreciate quality and style.`,
+    explanation: `"Elevate your morning routine" is among the most statistically common AI marketing openers. The adjective stacking — "premium," "elegant," "sophisticated" — without a single specific measurement, material, or origin story is a machine's simulation of product copy. Note no mention of brew time, ceramic type, or size.`,
+    signals: [{label:'"Elevate your routine"', t:'ai'},{label:'Adjective stacking', t:'ai'},{label:'No concrete specs', t:'ai'}]
+  },
+  {
+    type: 'reddit comment', icon: '💬',
+    source: 'Human',
+    content: `genuinely thought my dad was going to die laughing when I told him about this. He stopped, looked at me, and said "that's not how any of this works" in the exact voice he uses for people who merge wrong on the freeway`,
+    explanation: `The "merge wrong on the freeway" voice is the kind of hyper-specific behavioral detail that functions as fingerprint. It's absurd, relatable, and completely unverifiable — exactly what real anecdotes sound like. AI doesn't invent this kind of behavioral taxonomy; it reaches for broader examples.`,
+    signals: [{label:'Hyper-specific behavior detail', t:'human'},{label:'Absurdist precision', t:'human'},{label:'Unverifiable anecdote', t:'human'}]
+  },
+  {
+    type: 'poem', icon: '🖊️',
+    source: 'AI',
+    content: `In the garden of life, we plant our dreams,\nWatering them with hope and tender care.\nThrough seasons of joy and sorrow's extremes,\nWe grow toward the light beyond compare.`,
+    explanation: `The "garden of life" metaphor combined with "watering with hope" is among the most clichéd image-pairs in generated poetry. The rhyme scheme is technically correct but mechanically applied. "Beyond compare" exists purely to rhyme with "care." Human poets avoid these exact moves because they're embarrassing — AI hasn't learned embarrassment yet.`,
+    signals: [{label:'Garden-of-life metaphor', t:'ai'},{label:'Rhyme for rhyme\'s sake', t:'ai'},{label:'No concrete image', t:'ai'}]
+  },
+  {
+    type: 'email', icon: '📧',
+    source: 'Human',
+    content: `Hello —\n\nSorry for the delay. The short version is: yes, Thursday works, but only after 3 because I have a thing I can't move.\n\nAlso can you send me the brief again? I think I saved it wrong and I've been working off a different version which might explain some of my earlier feedback`,
+    explanation: `"A thing I can't move" is delightfully human — evasive without apology, trusting the reader to not need details. The self-aware admission of working off the wrong document is the kind of productive chaos AI wouldn't generate. The dashes and lowercase are stylistic, not accidental.`,
+    signals: [{label:'"A thing I can\'t move"', t:'human'},{label:'Self-admitting chaos', t:'human'},{label:'Functional vagueness', t:'human'}]
+  },
+  {
+    type: 'headline', icon: '📰',
+    source: 'AI',
+    content: `Scientists Discover Groundbreaking New Method to Combat Climate Change Using Ocean Algae — Experts Say This Could Be a "Game Changer" for Future Generations`,
+    explanation: `This headline uses the AI news-generation pattern precisely: a "groundbreaking" discovery, a passive "experts say," and a quoted "game changer." No source, no institution, no specific claim. It's a plausible headline that could accompany almost any climate story — because it was generated to sound like one.`,
+    signals: [{label:'"Groundbreaking" opener', t:'ai'},{label:'Vague expert quotes', t:'ai'},{label:'No specific claim', t:'ai'}]
+  },
+  {
+    type: 'tweet', icon: '🐦',
+    source: 'Human',
+    content: `therapist: you can't control everything\n\nme: [vibrating with rage at the person who loaded the dishwasher wrong again]`,
+    explanation: `The two-part joke structure — therapeutic advice versus petty domestic fury — is classic human internet humor. The dishwasher is a culturally loaded symbol for relationship friction. "Vibrating with rage" is deliberately excessive and self-aware. AI can approximate this format but the specific tension here — between self-knowledge and pettiness — is a human joke at their own expense.`,
+    signals: [{label:'Self-deprecating punchline', t:'human'},{label:'Specific domestic grievance', t:'human'},{label:'Ironic self-awareness', t:'human'}]
+  }
+];
+
+let state = {};
+
+function init() {
+  document.getElementById('app').style.display = 'grid';
+  document.getElementById('end-screen').style.display = 'none';
+  document.getElementById('end-screen').classList.remove('show');
+
+  const shuffled = [...ROUNDS].sort(() => Math.random() - .5);
+  state = {
+    rounds: shuffled,
+    idx: 0,
+    score: 0,
+    streak: 0,
+    maxStreak: 0,
+    results: [],
+    guessed: false
+  };
+
+  buildPips();
+  showRound();
+}
+
+function buildPips() {
+  const pips = document.getElementById('pips');
+  pips.innerHTML = '';
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('div');
+    p.className = 'pip' + (i === 0 ? ' current' : '');
+    p.id = `pip-${i}`;
+    pips.appendChild(p);
+  }
+}
+
+function showRound() {
+  const r = state.rounds[state.idx];
+  state.guessed = false;
+
+  document.getElementById('round-label').textContent = `${state.idx + 1} / 12`;
+  document.getElementById('card-type').innerHTML = `<span class="type-icon">${r.icon}</span>${r.type.charAt(0).toUpperCase() + r.type.slice(1)}`;
+  document.getElementById('card-content').textContent = r.content;
+  document.getElementById('signals').innerHTML = '';
+
+  // Reset card
+  const card = document.getElementById('content-card');
+  card.className = 'content-card';
+
+  // Reset answer banner
+  const banner = document.getElementById('answer-banner');
+  banner.className = 'answer-banner';
+  banner.style.background = '';
+  banner.style.opacity = '0';
+  banner.style.pointerEvents = 'none';
+
+  // Show shimmer
+  const shimmer = document.getElementById('shimmer');
+  shimmer.style.animation = 'none';
+  void shimmer.offsetWidth;
+  shimmer.style.animation = '';
+
+  // Buttons
+  document.getElementById('btn-ai').disabled = false;
+  document.getElementById('btn-human').disabled = false;
+  document.getElementById('btn-ai').className = 'btn btn-ai';
+  document.getElementById('btn-human').className = 'btn btn-human';
+
+  // Show next button slot
+  const btnRow = document.getElementById('btn-row');
+  // Remove old next btn if any
+  const old = btnRow.querySelector('.next-btn');
+  if (old) old.remove();
+
+  // Thinking bar animate
+  const bar = document.getElementById('thinking-bar');
+  bar.style.transition = 'none';
+  bar.style.width = '0';
+  void bar.offsetWidth;
+  bar.style.transition = 'width 12s linear';
+  bar.style.width = '100%';
+
+  updateScore();
+}
+
+function guess(choice) {
+  if (state.guessed) return;
+  state.guessed = true;
+
+  const r = state.rounds[state.idx];
+  const correct = choice === r.source.toLowerCase();
+
+  // Stop thinking bar
+  const bar = document.getElementById('thinking-bar');
+  bar.style.transition = 'width .3s';
+  bar.style.width = correct ? '100%' : '0%';
+
+  // Disable buttons + highlight
+  document.getElementById('btn-ai').disabled = true;
+  document.getElementById('btn-human').disabled = true;
+
+  const chosen = document.getElementById(`btn-${choice}`);
+  chosen.className = `btn btn-${choice} selected-${choice}`;
+
+  // Card glow
+  const card = document.getElementById('content-card');
+  card.className = `content-card reveal-${r.source.toLowerCase()} ${correct ? 'glow-'+r.source.toLowerCase() : ''}`;
+
+  // Show signal tags
+  const sigContainer = document.getElementById('signals');
+  r.signals.forEach((sig, i) => {
+    setTimeout(() => {
+      const el = document.createElement('span');
+      el.className = `sig sig-${sig.t}`;
+      el.textContent = sig.label;
+      sigContainer.appendChild(el);
+      requestAnimationFrame(() => el.classList.add('visible'));
+    }, i * 120);
+  });
+
+  // Answer banner
+  const banner = document.getElementById('answer-banner');
+  banner.className = `answer-banner ${correct ? 'correct-banner' : 'wrong-banner'} show`;
+  banner.style.opacity = '1';
+  banner.style.pointerEvents = 'auto';
+  document.getElementById('banner-label').textContent = correct ? '✓ Correct!' : '✗ Wrong!';
+  document.getElementById('banner-result').textContent = `It was ${r.source}-written`;
+  document.getElementById('banner-origin').textContent = r.type.charAt(0).toUpperCase() + r.type.slice(1);
+  document.getElementById('banner-explanation').textContent = r.explanation;
+
+  // Verdict flash
+  flash(correct ? '✓' : '✗', correct);
+
+  // Score
+  if (correct) {
+    state.score++;
+    state.streak++;
+    state.maxStreak = Math.max(state.maxStreak, state.streak);
+  } else {
+    state.streak = 0;
+  }
+  state.results.push({ correct, source: r.source, choice });
+
+  // Update pip
+  const pip = document.getElementById(`pip-${state.idx}`);
+  pip.className = `pip ${correct ? 'correct' : 'wrong'}`;
+  if (state.idx + 1 < 12) {
+    document.getElementById(`pip-${state.idx + 1}`).className = 'pip current';
+  }
+
+  updateScore();
+
+  // Next button
+  const btnRow = document.getElementById('btn-row');
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'btn next-btn';
+  nextBtn.textContent = state.idx < 11 ? 'Next →' : 'See Results';
+  nextBtn.onclick = advance;
+  btnRow.appendChild(nextBtn);
+}
+
+function advance() {
+  state.idx++;
+  if (state.idx >= 12) {
+    showEnd();
+  } else {
+    showRound();
+  }
+}
+
+function flash(symbol, correct) {
+  const el = document.getElementById('verdict-flash');
+  el.textContent = symbol;
+  el.style.color = correct ? 'oklch(70% 0.18 145)' : 'oklch(65% 0.2 25)';
+  el.className = 'verdict-flash show';
+  setTimeout(() => { el.className = 'verdict-flash hide'; }, 600);
+  setTimeout(() => { el.className = 'verdict-flash'; }, 900);
+}
+
+function updateScore() {
+  document.getElementById('score-num').textContent = state.score;
+  const streak = state.streak;
+  const sl = document.getElementById('streak-label');
+  if (streak >= 3) {
+    sl.innerHTML = `🔥 ${streak} in a row`;
+    sl.querySelector('span')?.remove();
+  } else if (streak >= 2) {
+    sl.textContent = `↑ ${streak} streak`;
+  } else {
+    sl.textContent = '';
+  }
+}
+
+function showEnd() {
+  document.getElementById('app').style.display = 'none';
+  const es = document.getElementById('end-screen');
+  es.style.display = 'flex';
+  requestAnimationFrame(() => es.classList.add('show'));
+
+  const s = state.score;
+  document.getElementById('end-big').textContent = `${s}/12`;
+
+  const verdicts = [
+    [12, "Perfect score!", "You have an exceptional eye for AI tells. Either you work in this field, or you've been burned by AI writing before."],
+    [10, "Impressive!", "You caught nearly everything. A few AI-written pieces fooled you, but you have strong intuition for authentic voice."],
+    [8, "Pretty good", "Solid instincts. The line between polished human writing and good AI is genuinely blurry — and you navigated it well."],
+    [6, "Getting there", "You got more right than wrong! The tricky ones tend to be short-form: tweets and texts are hardest to distinguish."],
+    [4, "Tricky, right?", "AI writing has gotten very good. The tells are subtle — hollow openers, adjective stacking, lack of specific memory."],
+    [0, "Tough game", "Don't worry — distinguishing AI from human writing is genuinely hard. Now you know what to look for."]
+  ];
+  const [, sub, verdict] = verdicts.find(([min]) => s >= min) || verdicts[verdicts.length - 1];
+  document.getElementById('end-sub').textContent = sub;
+  document.getElementById('end-verdict').textContent = verdict;
+
+  const aiRight = state.results.filter(r => r.source === 'AI' && r.correct).length;
+  const humanRight = state.results.filter(r => r.source === 'Human' && r.correct).length;
+  const aiTotal = state.results.filter(r => r.source === 'AI').length;
+  const humanTotal = state.results.filter(r => r.source === 'Human').length;
+
+  document.getElementById('end-breakdown').innerHTML = `
+    <div class="end-stat">
+      <div class="end-stat-num" style="color:var(--ai)">${aiRight}/${aiTotal}</div>
+      <div class="end-stat-label">AI Spotted</div>
+    </div>
+    <div class="end-stat">
+      <div class="end-stat-num" style="color:var(--human)">${humanRight}/${humanTotal}</div>
+      <div class="end-stat-label">Human Spotted</div>
+    </div>
+    <div class="end-stat">
+      <div class="end-stat-num" style="color:var(--gold)">${state.maxStreak}</div>
+      <div class="end-stat-label">Best Streak</div>
+    </div>
+  `;
+}
+
+init();
+</script>
+</body>
+</html>

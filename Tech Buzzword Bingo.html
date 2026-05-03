@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tech Buzzword Bingo</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── THEMES ── */
+[data-theme="light"] {
+  --paper: #f7f2e8;
+  --paper2: #ede7d9;
+  --paper3: #e0d8c8;
+  --ink: #1c1410;
+  --ink2: #3d3028;
+  --ink3: #7a6a58;
+  --red: #d43a22;
+  --red-dim: rgba(212,58,34,.12);
+  --green: #1e5c38;
+  --green-dim: rgba(30,92,56,.1);
+  --yellow: #e8a020;
+  --stamp-color: #d43a22;
+  --cell-bg: #faf6ee;
+  --cell-bord: #c8b99a;
+  --cell-marked-bg: #d43a22;
+  --cell-marked-text: #faf6ee;
+  --bingo-glow: rgba(212,58,34,.5);
+  --shadow: rgba(28,20,16,.15);
+  --noise-opacity: 0.04;
+  --scan: rgba(0,0,0,0);
+  --panel-bg: #f0e8d8;
+  --hr: #c8b99a;
+}
+
+[data-theme="dark"] {
+  --paper: #1a1410;
+  --paper2: #221c16;
+  --paper3: #2c2418;
+  --ink: #f0e8d8;
+  --ink2: #c8b99a;
+  --ink3: #7a6a58;
+  --red: #e8563c;
+  --red-dim: rgba(232,86,60,.15);
+  --green: #4aaa6e;
+  --green-dim: rgba(74,170,110,.12);
+  --yellow: #e8a020;
+  --stamp-color: #e8563c;
+  --cell-bg: #221c16;
+  --cell-bord: #3d3028;
+  --cell-marked-bg: #e8563c;
+  --cell-marked-text: #1a1410;
+  --bingo-glow: rgba(232,86,60,.6);
+  --shadow: rgba(0,0,0,.5);
+  --noise-opacity: 0.06;
+  --scan: rgba(255,255,255,.015);
+  --panel-bg: #1e1812;
+  --hr: #3d3028;
+}
+
+html, body {
+  height: 100%; overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Crimson Pro', Georgia, serif;
+  transition: background .4s, color .4s;
+}
+
+/* noise overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: var(--noise-opacity);
+  pointer-events: none; z-index: 0;
+}
+
+body { display: flex; flex-direction: column; position: relative; z-index: 1; }
+
+/* ── MASTHEAD ── */
+.masthead {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0 20px;
+  display: flex; align-items: stretch;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.masthead::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, var(--red) 0, var(--red) 8px, transparent 8px, transparent 12px);
+}
+.masthead-left {
+  padding: 10px 20px 10px 0;
+  border-right: 1px solid rgba(255,255,255,.15);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.masthead-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px; letter-spacing: .08em;
+  line-height: 1;
+  color: var(--paper);
+}
+.masthead-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px; letter-spacing: .2em;
+  color: rgba(240,232,216,.5);
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+.masthead-stats {
+  display: flex; align-items: center; gap: 0;
+  margin-left: auto;
+}
+.mstat {
+  padding: 0 18px;
+  border-left: 1px solid rgba(255,255,255,.12);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%;
+}
+.mstat-lbl {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px; letter-spacing: .2em; text-transform: uppercase;
+  color: rgba(240,232,216,.45);
+}
+.mstat-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: .05em;
+  color: var(--paper);
+  line-height: 1;
+}
+.mstat-val.accent { color: var(--red); }
+.mstat-val.accent2 { color: var(--yellow); }
+
+.theme-toggle {
+  padding: 7px 14px;
+  margin: auto 0 auto 10px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 2px;
+  color: rgba(240,232,216,.6);
+  font-family: 'Space Mono', monospace;
+  font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+  cursor: pointer; transition: all .2s;
+}
+.theme-toggle:hover { background: rgba(255,255,255,.1); color: var(--paper); }
+
+/* ── LAYOUT ── */
+.layout {
+  flex: 1; display: flex; min-height: 0; overflow: hidden;
+}
+
+/* ── BOARD SECTION ── */
+.board-section {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 16px 12px;
+  position: relative; overflow: hidden;
+}
+
+/* decorative corner marks */
+.board-section::before, .board-section::after {
+  content: '✦';
+  position: absolute;
+  font-size: 10px; color: var(--ink3); opacity: .3;
+}
+.board-section::before { top: 10px; left: 12px; }
+.board-section::after { bottom: 10px; right: 12px; }
+
+.board-container {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px;
+}
+
+/* BINGO letters row */
+.bingo-row {
+  display: flex; gap: 4px;
+}
+.bingo-letter {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px; letter-spacing: .1em;
+  color: var(--red);
+  line-height: 1;
+  text-align: center;
+  text-shadow: 2px 2px 0 var(--red-dim);
+}
+
+/* grid */
+.bingo-grid {
+  display: grid;
+  grid-template-columns: repeat(5, var(--cell-size, 100px));
+  gap: 4px;
+  border: 2px solid var(--ink);
+  padding: 4px;
+  background: var(--ink);
+  box-shadow: 6px 6px 0 var(--shadow);
+  position: relative;
+}
+
+.cell {
+  background: var(--cell-bg);
+  border: 1px solid var(--cell-bord);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  padding: 5px 4px;
+  position: relative; overflow: hidden;
+  transition: background .15s, transform .1s;
+  user-select: none;
+  width: var(--cell-size, 100px);
+  height: var(--cell-size, 100px);
+}
+.cell:hover:not(.free):not(.marked) {
+  background: var(--red-dim);
+  transform: scale(1.04);
+  z-index: 2;
+}
+.cell-word {
+  font-family: 'Space Mono', monospace;
+  font-size: 7.5px; font-weight: 700;
+  line-height: 1.25;
+  color: var(--ink);
+  text-transform: uppercase; letter-spacing: .03em;
+  transition: color .15s;
+}
+
+/* MARKED: big X stamp */
+.cell.marked {
+  background: var(--cell-marked-bg);
+}
+.cell.marked .cell-word {
+  color: var(--cell-marked-text);
+  opacity: .6;
+}
+.cell.marked::before {
+  content: '✕';
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  color: var(--cell-marked-text);
+  opacity: .25;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* FREE cell */
+.cell.free {
+  background: var(--green);
+  cursor: default;
+}
+.cell.free .cell-word {
+  color: #faf6ee;
+  font-size: 11px; letter-spacing: .08em;
+}
+
+/* BINGO line */
+.cell.bingo-line {
+  background: var(--yellow) !important;
+  animation: cell-flash .8s ease infinite alternate;
+}
+.cell.bingo-line .cell-word { color: var(--ink); opacity: 1; }
+.cell.bingo-line::before { color: var(--ink); opacity: .15; }
+@keyframes cell-flash {
+  from { box-shadow: inset 0 0 0 2px var(--red); }
+  to   { box-shadow: inset 0 0 0 2px var(--ink), 0 0 12px var(--bingo-glow); }
+}
+
+/* stamp pop */
+@keyframes stamp {
+  0%  { transform: scale(1.6) rotate(-6deg); opacity: 0; }
+  50% { transform: scale(.95) rotate(1deg); opacity: 1; }
+  100%{ transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.cell.just-marked { animation: stamp .35s cubic-bezier(.25,.46,.45,.94); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 270px; flex-shrink: 0;
+  background: var(--panel-bg);
+  border-left: 2px solid var(--hr);
+  display: flex; flex-direction: column;
+  transition: background .4s, border-color .4s;
+  overflow: hidden;
+}
+
+.sidebar-top {
+  padding: 14px 16px 10px;
+  border-bottom: 2px solid var(--hr);
+  flex-shrink: 0;
+}
+
+.sidebar-eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--ink3); margin-bottom: 6px;
+}
+
+/* current call display */
+.call-display {
+  min-height: 80px;
+  border: 2px solid var(--ink);
+  padding: 10px 12px;
+  background: var(--cell-bg);
+  position: relative;
+  box-shadow: 3px 3px 0 var(--shadow);
+  margin-bottom: 10px;
+}
+.call-display::before {
+  content: attr(data-num);
+  position: absolute; top: -8px; right: 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px; letter-spacing: .1em;
+  background: var(--red); color: #fff;
+  padding: 1px 6px;
+  line-height: 1.4;
+}
+.call-term {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: .06em;
+  color: var(--ink); line-height: 1.1;
+  margin-bottom: 4px;
+}
+.call-def {
+  font-size: 11px; line-height: 1.5;
+  color: var(--ink2); font-style: italic;
+}
+.call-empty {
+  font-size: 11px; color: var(--ink3);
+  font-style: italic; line-height: 1.5;
+}
+.on-board-tag {
+  display: inline-block; margin-bottom: 4px;
+  font-family: 'Space Mono', monospace;
+  font-size: 7px; letter-spacing: .15em; text-transform: uppercase;
+  background: var(--green); color: #faf6ee;
+  padding: 2px 6px;
+}
+
+/* CALL BUTTON */
+.call-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--red);
+  color: #faf6ee;
+  border: none;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: .12em;
+  cursor: pointer;
+  transition: all .15s;
+  position: relative;
+  box-shadow: 4px 4px 0 var(--ink);
+  display: block;
+}
+.call-btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.call-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.call-btn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+
+.new-btn {
+  width: 100%;
+  padding: 7px;
+  background: transparent;
+  color: var(--ink3);
+  border: 1px solid var(--hr);
+  font-family: 'Space Mono', monospace;
+  font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+  cursor: pointer; transition: all .2s; margin-top: 6px;
+}
+.new-btn:hover { color: var(--ink); border-color: var(--ink); }
+
+/* ── HISTORY ── */
+.history-section {
+  flex: 1; overflow-y: auto;
+  padding: 10px 14px 14px;
+}
+.history-section::-webkit-scrollbar { width: 3px; }
+.history-section::-webkit-scrollbar-thumb { background: var(--hr); }
+
+.history-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--ink3); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.history-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--hr);
+}
+
+.hist-item {
+  margin-bottom: 7px;
+  border-bottom: 1px solid var(--hr);
+  padding-bottom: 7px;
+  animation: slide-in .25s ease;
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hist-term {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px; letter-spacing: .05em;
+  color: var(--ink); display: flex; align-items: center; gap: 5px;
+}
+.hist-term .mark { font-size: 10px; color: var(--red); }
+.hist-def {
+  font-size: 10px; font-style: italic;
+  color: var(--ink3); line-height: 1.4;
+  margin-top: 1px;
+}
+
+/* ── WIN OVERLAY ── */
+.win-overlay {
+  position: fixed; inset: 0;
+  background: rgba(28,20,16,.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; opacity: 0; pointer-events: none;
+  transition: opacity .4s;
+}
+[data-theme="dark"] .win-overlay { background: rgba(0,0,0,.88); }
+.win-overlay.visible { opacity: 1; pointer-events: all; }
+
+.win-card {
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  padding: 0;
+  max-width: 380px; width: 90%;
+  box-shadow: 10px 10px 0 var(--ink);
+  position: relative; overflow: hidden;
+  animation: card-in .4s cubic-bezier(.25,.46,.45,.94);
+}
+@keyframes card-in {
+  from { transform: scale(.8) rotate(-4deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.win-banner {
+  background: var(--red);
+  padding: 20px 30px 14px;
+  text-align: center;
+  position: relative;
+}
+.win-banner::after {
+  content: '';
+  display: block;
+  height: 4px;
+  background: repeating-linear-gradient(90deg, var(--ink) 0, var(--ink) 6px, transparent 6px, transparent 10px);
+  margin-top: 10px;
+}
+.win-bingo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 72px; letter-spacing: .15em;
+  color: #faf6ee; line-height: 1;
+  text-shadow: 4px 4px 0 rgba(0,0,0,.3);
+}
+.win-body {
+  padding: 20px 28px 24px;
+  text-align: center;
+}
+.win-stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px; color: var(--ink); line-height: 1;
+}
+.win-stat-lbl {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--ink3); margin-bottom: 18px;
+}
+.win-actions { display: flex; gap: 8px; }
+.win-btn-p {
+  flex: 1; padding: 12px;
+  background: var(--ink); color: var(--paper);
+  border: none; font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px; letter-spacing: .1em;
+  cursor: pointer; transition: all .15s;
+  box-shadow: 3px 3px 0 var(--red);
+}
+.win-btn-p:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--red); }
+.win-btn-s {
+  flex: 1; padding: 12px;
+  background: transparent; color: var(--ink3);
+  border: 1px solid var(--hr);
+  font-family: 'Space Mono', monospace;
+  font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
+  cursor: pointer; transition: all .2s;
+}
+.win-btn-s:hover { color: var(--ink); border-color: var(--ink); }
+
+/* confetti */
+.confetti { position: fixed; pointer-events: none; z-index: 199; }
+.confetti div {
+  position: absolute;
+  width: 8px; height: 10px;
+  animation: conf-fall linear forwards;
+}
+@keyframes conf-fall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(var(--rot)); opacity: 0; }
+}
+
+/* sparks */
+.spark {
+  position: fixed; border-radius: 50%;
+  pointer-events: none; z-index: 100;
+  animation: spark-go ease-out forwards;
+}
+@keyframes spark-go {
+  0%   { transform: translate(0,0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+</style>
+</head>
+<body>
+<!-- ETx Game Zone — Back to Homepage button -->
+<a href="index.html" id="etx-back-btn" aria-label="Back to homepage" title="Back to Game Zone">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+  </svg>
+  <span>Game Zone</span>
+</a>
+<style id="etx-back-btn-style">
+#etx-back-btn{
+  position:fixed;
+  top:14px;left:14px;
+  z-index:2147483647;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 14px 9px 11px;
+  background:rgba(8,10,20,.72);
+  color:#e8eaff;
+  border:1px solid rgba(140,160,220,.28);
+  border-radius:100px;
+  text-decoration:none;
+  font-family:'JetBrains Mono','Space Grotesk',ui-monospace,SFMono-Regular,Menlo,monospace,sans-serif;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:1px;
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  box-shadow:0 4px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06);
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),background .25s,border-color .25s,box-shadow .25s,padding .25s;
+  cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+#etx-back-btn svg{
+  width:16px;height:16px;
+  flex-shrink:0;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1);
+}
+#etx-back-btn span{
+  white-space:nowrap;
+  text-transform:uppercase;
+}
+#etx-back-btn:hover{
+  background:rgba(94,126,255,.18);
+  border-color:rgba(94,126,255,.55);
+  box-shadow:0 8px 30px rgba(94,126,255,.35),inset 0 1px 0 rgba(255,255,255,.1);
+  transform:translateY(-1px);
+}
+#etx-back-btn:hover svg{transform:translateX(-3px)}
+#etx-back-btn:active{transform:translateY(0)}
+#etx-back-btn:focus-visible{
+  outline:2px solid #5e7eff;
+  outline-offset:3px;
+}
+@media(max-width:600px){
+  #etx-back-btn{
+    padding:8px;
+    border-radius:50%;
+  }
+  #etx-back-btn span{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  #etx-back-btn,#etx-back-btn svg{transition:none}
+}
+</style>
+
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="masthead-left">
+    <div class="masthead-title">Tech Buzzword Bingo</div>
+    <div class="masthead-sub">MCMC Leisure Game</div>
+  </div>
+  <div class="masthead-stats">
+    <div class="mstat">
+      <div class="mstat-lbl">Marked</div>
+      <div class="mstat-val accent" id="marked-v">0</div>
+    </div>
+    <div class="mstat">
+      <div class="mstat-lbl">Bingos</div>
+      <div class="mstat-val accent2" id="bingos-v">0</div>
+    </div>
+    <div class="mstat">
+      <div class="mstat-lbl">Called</div>
+      <div class="mstat-val" id="called-v">0/45</div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()">
+      <span id="theme-lbl">☾ Dark</span>
+    </button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- BOARD -->
+  <div class="board-section">
+    <div class="board-container">
+      <div class="bingo-row" id="bingo-row"></div>
+      <div class="bingo-grid" id="bingo-grid"></div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-eyebrow">Current Call</div>
+      <div class="call-display" id="call-display" data-num="#">
+        <div class="call-empty">Hit "Call Next" to draw a term</div>
+      </div>
+      <button class="call-btn" id="call-btn" onclick="callNext()">▶ Call Next Term</button>
+      <button class="new-btn" onclick="newGame()">↺ New Game</button>
+    </div>
+
+    <div class="history-section">
+      <div class="history-label">Call History</div>
+      <div id="history-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- WIN OVERLAY -->
+<div class="win-overlay" id="win-overlay">
+  <div class="win-card">
+    <div class="win-banner">
+      <div class="win-bingo">BINGO!</div>
+    </div>
+    <div class="win-body">
+      <div class="win-stat-num" id="win-stat">–</div>
+      <div class="win-stat-lbl">Terms Called</div>
+      <div class="win-actions">
+        <button class="win-btn-p" onclick="closeWin()">Keep Playing</button>
+        <button class="win-btn-s" onclick="newGame()">New Board</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="confetti" id="confetti"></div>
+
+<script>
+const ALL_TERMS = [
+  {term:"Agentic AI",      def:"AI that autonomously plans and acts toward goals without step-by-step human guidance."},
+  {term:"RAG",             def:"Retrieval-Augmented Generation — grounding LLMs with retrieved documents to reduce hallucinations."},
+  {term:"MoE",             def:"Mixture of Experts — routing tokens to specialized sub-networks for efficient scale."},
+  {term:"Vibe Coding",     def:"Writing code by describing intent in natural language to an AI assistant."},
+  {term:"Digital Twin",    def:"A live virtual replica of a physical asset updated with real-time sensor data."},
+  {term:"Neuromorphic",    def:"Computing architectures mimicking spiking neurons for ultra-low-power inference."},
+  {term:"Liquid Neural",   def:"Networks with dynamic time-constants that adapt their graph to input sequences."},
+  {term:"Model Collapse",  def:"Quality degradation from training recursively on AI-generated data without real grounding."},
+  {term:"Hallucination",   def:"When an LLM generates plausible-sounding but factually incorrect information."},
+  {term:"Edge AI",         def:"Running inference directly on endpoint devices to reduce latency."},
+  {term:"Federated Learn", def:"Training ML across devices without raw data ever leaving the source."},
+  {term:"Zero-Shot",       def:"A model performing tasks it was never explicitly trained on."},
+  {term:"RLHF",            def:"Reinforcement Learning from Human Feedback — aligning models to human preferences."},
+  {term:"Prompt Inject",   def:"Adversarial inputs hijacking LLM behavior via hidden embedded instructions."},
+  {term:"Vector DB",       def:"Databases optimized for querying high-dimensional embeddings via nearest-neighbor search."},
+  {term:"Tokenomics",      def:"The economic design of a blockchain token — supply mechanics and value capture."},
+  {term:"zkML",            def:"Zero-knowledge proofs applied to ML inference for verifiable computation."},
+  {term:"SLM",             def:"Small Language Models optimized for on-device or domain-specific deployment."},
+  {term:"Fine-Tuning",     def:"Adapting a pre-trained model to a specific task on a curated domain dataset."},
+  {term:"LoRA",            def:"Low-Rank Adaptation — cheaply fine-tuning large models via small weight updates."},
+  {term:"Context Window",  def:"The maximum token span an LLM can process at once."},
+  {term:"Multimodal",      def:"AI that reasons across text, image, audio, and video simultaneously."},
+  {term:"Copilot Pattern", def:"Embedding AI into a workflow to augment, not replace, human decisions."},
+  {term:"Synthetic Data",  def:"Machine-generated training data substituting scarce real-world labeled datasets."},
+  {term:"KV Cache",        def:"Storing attention pairs during inference to avoid redundant computation."},
+  {term:"Alignment Tax",   def:"Performance cost a model pays when tuned to be safer or more helpful."},
+  {term:"Transformer",     def:"The self-attention architecture underpinning every modern foundation model."},
+  {term:"Diffusion Model", def:"Generative models reversing a noising process to synthesize images or audio."},
+  {term:"Foundation Model",def:"A large pre-trained model serving as a base for many downstream tasks."},
+  {term:"TinyML",          def:"Deploying ML on microcontrollers and IoT devices with milliwatt power budgets."},
+  {term:"AGI",             def:"Artificial General Intelligence — hypothetical human-level cognition across all domains."},
+  {term:"Spatial Compute", def:"Computing paradigms for AR/VR that process 3D environment understanding."},
+  {term:"Quantum ML",      def:"Leveraging quantum superposition and entanglement for machine learning."},
+  {term:"Model Card",      def:"Documentation disclosing a model's intended use, limitations, and training data."},
+  {term:"Autonomy Stack",  def:"Layered software (perception→planning→control) enabling independent robot action."},
+  {term:"Inference Cost",  def:"The compute and economic expense of running a model at production scale."},
+  {term:"Distillation",    def:"Training a smaller 'student' model to mimic a larger 'teacher' model."},
+  {term:"Embedding",       def:"A dense vector encoding semantic relationships in continuous high-dimensional space."},
+  {term:"AI Safety",       def:"Research ensuring advanced AI behaves reliably and aligned with human values."},
+  {term:"Attention Head",  def:"An individual learned subspace within multi-head self-attention."},
+  {term:"Reasoning Model", def:"LLMs generating explicit chain-of-thought steps before final answers."},
+  {term:"WASM AI",         def:"Running ML inference compiled to WebAssembly directly in the browser."},
+  {term:"Carbon Tokens",   def:"Blockchain certificates representing verified carbon emission reductions."},
+  {term:"Post-Quantum",    def:"Cryptography designed to resist attacks from large-scale quantum computers."},
+  {term:"AI Ops",          def:"Applying ML to IT operations for anomaly detection and auto-remediation."},
+];
+
+let board=[], calledTerms=[], uncalled=[], bingoLines=new Set(), bingoCount=0;
+
+function shuffle(a){ return [...a].sort(()=>Math.random()-.5); }
+
+function newGame(){
+  closeWin();
+  calledTerms=[]; bingoLines=new Set(); bingoCount=0;
+  document.getElementById('history-list').innerHTML='';
+  document.getElementById('call-btn').disabled=false;
+
+  const picked = shuffle(ALL_TERMS).slice(0,24);
+  board=[];
+  for(let i=0;i<25;i++){
+    if(i===12){ board.push({term:'FREE',def:'',marked:true,isFree:true}); }
+    else { const t=picked[i<12?i:i-1]; board.push({term:t.term,def:t.def,marked:false,isFree:false}); }
+  }
+  uncalled = shuffle(ALL_TERMS);
+
+  renderBingoLetters();
+  renderBoard();
+  renderCallDisplay(null);
+  updateStats();
+}
+
+function renderBingoLetters(){
+  const row=document.getElementById('bingo-row');
+  row.innerHTML='';
+  ['B','I','N','G','O'].forEach(l=>{
+    const el=document.createElement('div');
+    el.className='bingo-letter';
+    el.textContent=l;
+    row.appendChild(el);
+  });
+  row.style.gap='4px';
+}
+
+function getCellSize(){
+  const boardSection = document.querySelector('.board-section');
+  const availH = (boardSection ? boardSection.clientHeight : window.innerHeight) - 80;
+  const availW = (boardSection ? boardSection.clientWidth : window.innerWidth - 270) - 60;
+  return Math.min(Math.floor(Math.min(availH, availW) / 5.4), 116);
+}
+
+function renderBoard(){
+  const g=document.getElementById('bingo-grid');
+  g.innerHTML='';
+  const size = getCellSize();
+  document.documentElement.style.setProperty('--cell-size', size+'px');
+
+  board.forEach((cell,i)=>{
+    const el=document.createElement('div');
+    el.className='cell'+(cell.isFree?' free':'')+(cell.marked&&!cell.isFree?' marked':'');
+    if(cell.marked&&!cell.isFree) el.classList.add('marked');
+    el.dataset.idx=i;
+
+    const fs=Math.max(6, Math.min(9, size/12));
+    const word=document.createElement('div');
+    word.className='cell-word';
+    word.style.fontSize=fs+'px';
+    word.textContent=cell.isFree?'FREE':cell.term;
+    el.appendChild(word);
+
+    if(!cell.isFree) el.addEventListener('click',()=>onCellClick(i,el));
+    g.appendChild(el);
+  });
+
+  // re-align BINGO letters
+  document.querySelectorAll('.bingo-letter').forEach(el=>{ el.style.width=size+'px'; });
+}
+
+function onCellClick(i, el){
+  if(!calledTerms.some(c=>c.term===board[i].term)) return;
+  board[i].marked=!board[i].marked;
+  el.classList.toggle('marked', board[i].marked);
+  el.classList.add('just-marked');
+  setTimeout(()=>el.classList.remove('just-marked'),400);
+  if(board[i].marked) spawnSparks(el);
+  updateStats(); checkBingo();
+}
+
+function callNext(){
+  if(!uncalled.length) return;
+  const term=uncalled.shift();
+  calledTerms.unshift(term);
+
+  const idx=board.findIndex(c=>c.term===term.term);
+
+  renderBoard();
+  renderCallDisplay(term);
+  prependHistory(term, idx>=0);
+  updateStats();
+
+  if(idx>=0){
+    // Pulse the cell to draw attention without marking it
+    requestAnimationFrame(()=>{
+      const el=document.querySelector(`.cell[data-idx="${idx}"]`);
+      if(el){ el.style.outline='3px solid var(--red)'; setTimeout(()=>el.style.outline='',1200); }
+    });
+  }
+  if(!uncalled.length) document.getElementById('call-btn').disabled=true;
+  checkBingo();
+}
+
+function renderCallDisplay(term){
+  const box=document.getElementById('call-display');
+  if(!term){
+    box.dataset.num='#';
+    box.innerHTML=`<div class="call-empty">Hit "Call Next" to draw a term</div>`;
+    return;
+  }
+  const onBoard=board.some(c=>c.term===term.term);
+  box.dataset.num=`#${calledTerms.length}`;
+  box.innerHTML=`
+    ${onBoard?`<div class="on-board-tag">✓ On your board</div>`:''}
+    <div class="call-term">${term.term}</div>
+    <div class="call-def">${term.def}</div>
+  `;
+}
+
+function prependHistory(term, onBoard){
+  const list=document.getElementById('history-list');
+  const el=document.createElement('div');
+  el.className='hist-item';
+  el.innerHTML=`<div class="hist-term">${term.term}${onBoard?'<span class="mark">✕</span>':''}</div><div class="hist-def">${term.def}</div>`;
+  list.prepend(el);
+}
+
+function updateStats(){
+  document.getElementById('marked-v').textContent=board.filter(c=>c.marked&&!c.isFree).length;
+  document.getElementById('bingos-v').textContent=bingoCount;
+  document.getElementById('called-v').textContent=calledTerms.length+'/45';
+}
+
+const LINES=[
+  [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],
+  [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],
+  [0,6,12,18,24],[4,8,12,16,20]
+];
+
+function checkBingo(){
+  let got=false;
+  LINES.forEach(line=>{
+    const key=line.join(',');
+    if(!bingoLines.has(key)&&line.every(i=>board[i].marked)){
+      bingoLines.add(key); bingoCount++; got=true;
+      line.forEach(i=>{
+        const el=document.querySelector(`.cell[data-idx="${i}"]`);
+        if(el) el.classList.add('bingo-line');
+      });
+    }
+  });
+  if(got){ updateStats(); setTimeout(showWin,500); }
+}
+
+function showWin(){
+  document.getElementById('win-stat').textContent=calledTerms.length;
+  document.getElementById('win-overlay').classList.add('visible');
+  spawnConfetti();
+}
+function closeWin(){ document.getElementById('win-overlay').classList.remove('visible'); }
+
+function spawnConfetti(){
+  const c=document.getElementById('confetti');
+  c.innerHTML='';
+  const cols=['#d43a22','#1e5c38','#e8a020','#f7f2e8','#1c1410'];
+  for(let i=0;i<70;i++){
+    const d=document.createElement('div');
+    d.style.cssText=`left:${Math.random()*100}%;background:${cols[i%cols.length]};animation-duration:${1.2+Math.random()*1.4}s;animation-delay:${Math.random()*.8}s;--rot:${Math.random()*720-360}deg;border-radius:${Math.random()>.5?'50%':'1px'};transform:rotate(${Math.random()*360}deg);`;
+    c.appendChild(d);
+    setTimeout(()=>d.remove(),3000);
+  }
+}
+
+function spawnSparks(el){
+  const r=el.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  const col=getComputedStyle(document.documentElement).getPropertyValue('--red').trim();
+  for(let i=0;i<10;i++){
+    const s=document.createElement('div');
+    s.className='spark';
+    const a=Math.random()*Math.PI*2, d=25+Math.random()*45;
+    s.style.cssText=`width:5px;height:5px;left:${cx}px;top:${cy}px;background:${col};--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px;animation-duration:${.35+Math.random()*.25}s;`;
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),700);
+  }
+}
+
+function toggleTheme(){
+  const html=document.documentElement;
+  const isLight=html.dataset.theme==='light';
+  html.dataset.theme=isLight?'dark':'light';
+  document.getElementById('theme-lbl').textContent=isLight?'☀ Light':'☾ Dark';
+}
+
+window.addEventListener('resize',renderBoard);
+newGame();
+</script>
+</body>
+</html>
