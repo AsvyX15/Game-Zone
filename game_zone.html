@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETx Game Zone</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: transparent;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .hero {
+    max-width: 1400px;
+    width: 100%;
+    background: transparent;
+    border-radius: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 0;
+    overflow: hidden;
+    position: relative;
+    min-height: 500px;
+    padding: 48px 60px;
+  }
+
+  /* ── LEFT COLUMN ── */
+  .left {
+    padding: 0 40px 0 0;
+    z-index: 1;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #f0eaff;
+    border: 1px solid #d4bbff;
+    border-radius: 100px;
+    padding: 7px 16px;
+    margin-bottom: 22px;
+  }
+
+  .badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #7c3aed;
+    flex-shrink: 0;
+  }
+
+  .badge-text {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #7c3aed;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-family: 'Sora', sans-serif;
+    line-height: 1.08;
+    margin-bottom: 16px;
+  }
+
+  h1 .black { display: block; font-size: 52px; font-weight: 800; color: #0d1b2a; }
+
+  h1 .pink {
+    display: block;
+    font-size: 52px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #c040a0, #a04297);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  h1 .blue {
+    display: block;
+    font-size: 52px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #0a4a8f, #1c7bd1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0a4a8f;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .subtitle .sep { opacity: 0.35; font-weight: 400; }
+
+  .body-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #475066;
+    margin-bottom: 28px;
+    max-width: 420px;
+  }
+
+  .body-text b { color: #2c3a54; font-weight: 700; }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #0a4a8f;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 26px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  .cta:hover { background: #0d5cb8; transform: translateY(-1px); }
+  .cta:active { transform: translateY(0); }
+
+  .cta-arrow {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── RIGHT COLUMN ── */
+  .right {
+    position: relative;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .bg-scene {
+    position: relative;
+    width: 500px;
+    height: 420px;
+    flex-shrink: 0;
+  }
+
+  /* large orbit rings */
+  .bg-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(100, 160, 255, 0.2);
+  }
+  .bg-ring-1 { width: 240px; height: 240px; border-color: rgba(139, 92, 246, 0.2); }
+  .bg-ring-2 { width: 360px; height: 360px; border-color: rgba(100, 160, 255, 0.15); }
+  .bg-ring-3 { width: 480px; height: 480px; border-color: rgba(139, 92, 246, 0.08); }
+
+  /* diagonal line across ring like in reference */
+  .bg-line {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 580px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(139,92,246,0.12), transparent);
+    transform: translate(-50%, -50%) rotate(-35deg);
+  }
+
+  /* small floating rounded squares */
+  .sq {
+    position: absolute;
+    border-radius: 18px;
+    border: 1.5px solid rgba(139, 92, 246, 0.35);
+    background: rgba(200, 180, 255, 0.12);
+  }
+
+  .sq1 { width: 70px;  height: 70px;  top: 20px;  left: 20px;  animation: fl1 4.5s ease-in-out infinite; }
+  .sq2 { width: 55px;  height: 55px;  top: 10px;  right: 30px; animation: fl2 5.5s ease-in-out infinite 0.7s; }
+  .sq3 { width: 80px;  height: 80px;  bottom: 40px; right: 20px; animation: fl3 5s ease-in-out infinite 1.2s; }
+  .sq4 { width: 50px;  height: 50px;  bottom: 60px; left: 10px;  animation: fl4 6s ease-in-out infinite 0.4s; }
+  .sq5 { width: 42px;  height: 42px;  top: 45%;   left: -10px;  animation: fl1 4s ease-in-out infinite 1.8s; }
+  .sq6 { width: 48px;  height: 48px;  top: 30%;   right: -5px;  animation: fl2 5.2s ease-in-out infinite 0.9s; }
+
+  @keyframes fl1 { 0%,100%{transform:translateY(0px)}   50%{transform:translateY(-14px)} }
+  @keyframes fl2 { 0%,100%{transform:translateY(0px)}   50%{transform:translateY(-10px)} }
+  @keyframes fl3 { 0%,100%{transform:translateY(0px)}   50%{transform:translateY(-18px)} }
+  @keyframes fl4 { 0%,100%{transform:translateY(0px)}   50%{transform:translateY(-12px)} }
+
+</style>
+</head>
+<body>
+
+<section class="hero">
+
+  <!-- LEFT -->
+  <div class="left">
+
+    <div class="badge">
+      <span class="badge-dot"></span>
+      <span class="badge-text">ETx Game Zone</span>
+    </div>
+
+    <h1>
+      <span class="black">Think Fast,</span>
+      <span class="pink">Play Smart,</span>
+      <span class="blue">Go Tech.</span>
+    </h1>
+
+    <p class="subtitle">
+      Powered by ETAD
+    </p>
+
+    <p class="body-text">
+      Put your tech knowledge to the test! From <b>debugging code</b> to <b>designing smart cities</b> — these six interactive games, crafted by Amirullah, make learning <b>emerging technologies</b> genuinely fun. Join us and enjoy the experience!
+    </p>
+
+    <a class="cta" href="#">
+      Play Now
+      <span class="cta-arrow">
+        <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+          <line x1="3" y1="9" x2="15" y2="9"/>
+          <polyline points="10,4 15,9 10,14"/>
+        </svg>
+      </span>
+    </a>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="bg-scene">
+      <!-- orbit rings -->
+      <div class="bg-ring bg-ring-1"></div>
+      <div class="bg-ring bg-ring-2"></div>
+      <div class="bg-ring bg-ring-3"></div>
+      <!-- diagonal line -->
+      <div class="bg-line"></div>
+      <!-- floating rounded squares -->
+      <div class="sq sq1"></div>
+      <div class="sq sq2"></div>
+      <div class="sq sq3"></div>
+      <div class="sq sq4"></div>
+      <div class="sq sq5"></div>
+      <div class="sq sq6"></div>
+    </div>
+  </div>
+
+</section>
+
+</body>
+</html>
